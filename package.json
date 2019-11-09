@@ -3,17 +3,19 @@
     "version": "0.1.0",
     "private": true,
     "dependencies": {
-        "antd": "^3.16.1",
-        "normalize.css": "^8.0.1",
+        "@chakra-ui/core": "^0.4.1",
+        "@emotion/core": "^10.0.22",
+        "@emotion/styled": "^10.0.23",
+        "emotion-theming": "^10.0.19",
         "react": "^16.8.6",
         "react-currency-formatter": "^1.1.0",
         "react-dom": "^16.8.6",
-        "react-scripts": "2.1.8",
-        "styled-components": "^4.2.0"
+        "react-scripts": "2.1.8"
     },
     "scripts": {
         "start": "react-scripts start",
-        "build": "react-scripts build"
+        "build": "rm -rf build && react-scripts build",
+        "copy": "cp -r build/* ../shabla.github.io/"
     },
     "eslintConfig": {
         "extends": "react-app"

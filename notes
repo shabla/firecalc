@@ -1,0 +1,23 @@
+Net Income
+Expenses
+
+
+Frequency input
+===============
+
+Receive [ X ] $ amount
+    [ ] once in [ XXXX ] (year)
+    [ ] fixed number of times
+    [ ] every
+        [ ] day
+        [ ] week
+        [ ] month
+        [ ] year
+        Starting year [XXXX]
+
+[X]$ once in [XXXX]
+[X]$ every [X] day starting year [XXXX]
+
+amount (0-999999)
+frequency (1: once, X: every)
+year (now and later)
