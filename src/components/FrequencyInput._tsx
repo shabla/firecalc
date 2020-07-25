@@ -5,7 +5,12 @@ import IncomeDescription from "./IncomeDescription";
 
 const TIME_SCALES = ["day", "week", "month", "year"];
 
-const FiltersIncomes = ({ onSave, minYear }) => {
+interface FiltersIncomesProps {
+    onSave?: () => void;
+    minYear?: number;
+}
+
+const FiltersIncomes: React.FC<FiltersIncomesProps> = ({ onSave, minYear }) => {
     const [amount, setAmount] = useState(1);
     const [isRecurring, setIsRecurring] = useState(false);
     const [targetYear, setTargetYear] = useState(minYear);
@@ -18,14 +23,14 @@ const FiltersIncomes = ({ onSave, minYear }) => {
     const recurringFrequencyField = useRef(null);
 
     useEffect(() => {
-        amountField.current.focus();
+        // amountField.current.focus();
     }, []);
 
     useEffect(() => {
         if (isRecurring) {
-            recurringFrequencyField.current.focus();
+            // recurringFrequencyField.current.focus();
         } else {
-            targetYearField.current.focus();
+            // targetYearField.current.focus();
         }
     }, [isRecurring]);
 

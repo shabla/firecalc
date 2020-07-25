@@ -8,10 +8,15 @@ import {
     FormControl,
     FormLabel,
     Heading,
-    Box
+    Box,
+    BoxProps
 } from "@chakra-ui/core";
 
-const FiltersMisc = ({ onChange, ...rest }) => {
+interface FiltersMiscProps {
+    onChange: (filters: any) => void;
+}
+
+const FiltersMisc: React.FC<FiltersMiscProps> = ({ onChange, ...rest }) => {
     const [startingYear, setStartingYear] = useState(2019);
     const [initialCapital, setInitialCapital] = useState(0);
     const [targetRetirementIncome, setTargetRetirementIncome] = useState(40000);

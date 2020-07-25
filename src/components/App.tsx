@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import Currency from "react-currency-formatter";
-import { ThemeProvider, theme, CSSReset, Box } from "@chakra-ui/core";
+import { ThemeProvider, Stack, theme, CSSReset, Box } from "@chakra-ui/core";
 
 import Filters from "./Filters";
 
@@ -28,7 +28,7 @@ const FREQ = {
 const ROWS_TO_SHOW = 100;
 
 const App = () => {
-    const [startingYear, setStartingYear] = useState(new Date().getFullYear());
+    // const [startingYear, setStartingYear] = useState(new Date().getFullYear());
     // const [startingAge, setStartingAge] = useState(30);
     // const [endAge, setEndAge] = useState(75);
     // const [initialSalary, setInitialSalary] = useState(40000);
@@ -112,37 +112,41 @@ const App = () => {
 
     // const data = generateData();
 
-    const onFiltersChange = values => {
+    const onFiltersChange = (values: any) => {
         console.log("filters", values);
     };
 
     return (
         <ThemeProvider theme={theme}>
             <CSSReset />
-            <Filters onChange={onFiltersChange} startingYear={startingYear} />
+            
+            <Filters onChange={onFiltersChange} />
 
-            <table>
-                <thead>
-                    <tr>
-                        {columns.map(col => {
-                            return <th key={`th-${col.key}`}>{col.title}</th>;
-                        })}
-                    </tr>
-                </thead>
+            <Stack>
+                <table className="the-table">
+                    <thead>
+                        <tr>
+                            {columns.map(col => {
+                                return <th key={`th-${col.key}`}>{col.title}</th>;
+                            })}
+                        </tr>
+                    </thead>
 
-                <tbody>
-                    {/* {columns.map(col => {
-                        const colProps = {};
-                        if (!["year", "startingAge", "empty", "capitalFraction"].includes(col.dataIndex)) {
-                            colProps.render = v => (
-                                <Currency quantity={v} currency="CAD" pattern="###,### !" />
-                            );
-                        }
+                    <tbody>
+                        {/* {columns.map(col => {
+                            const colProps = {};
+                            if (!["year", "startingAge", "empty", "capitalFraction"].includes(col.dataIndex)) {
+                                colProps.render = v => (
+                                    <Currency quantity={v} currency="CAD" pattern="###,### !" />
+                                );
+                            }
 
-                        return <tr></tr>;
-                    })} */}
-                </tbody>
-            </table>
+                            return <tr></tr>;
+                        })} */}
+                    </tbody>
+                </table>
+            </Stack>
+
 
             {/* <FiltersColContainer>
 
