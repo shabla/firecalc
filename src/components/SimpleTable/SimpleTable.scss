@@ -3,7 +3,6 @@
         background: #333439;
 
         th {
-            text-align: left;
             font-weight: 500;
             color: white;
             padding: 10px 8px;
@@ -13,7 +12,7 @@
     tbody {
         tr {
             &:nth-of-type(even) {
-                background: #F8FBFD;
+                background: #ebf1f5;
             }
 
             td {
@@ -24,6 +23,7 @@
 
     th, td {
         font-size: 14px;
+        text-align: center;
 
         &.spacer {
             width: 15px;

@@ -1,5 +1,3 @@
-
-
 export interface CashFlow {
     id?: string;
     name: string,

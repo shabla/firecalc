@@ -1,1 +1,2 @@
-export { SimpleTable } from "./SimpleTable/SimpleTable";
+export * from "./SimpleTable/SimpleTable";
+export * from "./CashFlowTable/CashFlowTable";

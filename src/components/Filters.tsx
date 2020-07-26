@@ -1,12 +1,15 @@
 import React, { useState, useEffect } from "react";
-import Currency from "react-currency-formatter";
 import { v4 as uuidv4 } from "uuid";
 import {
     Button,
-    Box,
     InputGroup,
     InputRightElement,
     FormControl,
+    NumberInput,
+    NumberInputField,
+    NumberInputStepper,
+    NumberIncrementStepper,
+    NumberDecrementStepper,
     FormLabel,
     Select,
     Input,
@@ -18,11 +21,10 @@ import {
 
 import { EditCashFlowDialog } from "./EditCashFlowDialog/EditCashFlowDialog";
 import { FilterSection } from "./FilterSection";
-import { CashFlow } from "../models/CashFlow";
-import { FiltersValues } from "../models/FiltersValues";
-import { SafeWithdrawalType } from "../values/SafeWithdrawalType";
-import { SimpleTable } from "components";
-import { RecurrenceType } from "values";
+import { removeFromList } from "utils";
+import { CashFlowTable } from "components";
+import { SafeWithdrawalType } from "values";
+import { CashFlow, FiltersValues } from "models";
 
 interface FiltersProps {
     defaultYear?: number;
@@ -49,6 +51,7 @@ const Filters: React.FC<FiltersProps> = ({
 }) => {
     const { isOpen, onOpen, onClose } = useDisclosure();
     const [dialogTitle, setDialogTitle] = useState<string>("");
+    const [activeCashFlow, setActiveCashFlow] = useState<CashFlow | undefined>();
 
     // Misc
     const [startingYear, setStartingYear] = useState<number>(defaultYear);
@@ -78,7 +81,8 @@ const Filters: React.FC<FiltersProps> = ({
         })
     );
 
-    const addCashFlow = (target: CashFlow[], cashFlow: CashFlow): CashFlow[] => {
+    const updateCashFlow = (target: CashFlow[], cashFlow: CashFlow): CashFlow[] => {
+        console.log("find ", cashFlow, "in", target)
         if (cashFlow.id) {
             // Update
             const index = target.findIndex((item) => item.id === cashFlow.id);
@@ -95,16 +99,12 @@ const Filters: React.FC<FiltersProps> = ({
         return target;
     };
 
-    const handleIncomeChange = (cashFlow: CashFlow) => {
-        console.log(cashFlow);
-        onClose();
-        setIncomes(addCashFlow(incomes, cashFlow));
+    const handleIncomeCreated = (cashFlow: CashFlow) => {
+        setIncomes(updateCashFlow(incomes, cashFlow));
     };
 
-    const handleExpenseChange = (cashFlow: CashFlow) => {
-        console.log(cashFlow);
-        onClose();
-        setExpenses(addCashFlow(expenses, cashFlow));
+    const handleExpenseCreated = (cashFlow: CashFlow) => {
+        setExpenses(updateCashFlow(expenses, cashFlow));
     };
 
     const handleAddIncome = () => {
@@ -115,6 +115,44 @@ const Filters: React.FC<FiltersProps> = ({
     const handleAddExpense = () => {
         setDialogTitle("Add Expense");
         onOpen();
+    };
+
+    const handleDeleteIncome = (cashFlow: CashFlow) => {
+        setIncomes(removeFromList(incomes, cashFlow));
+    };
+
+    const handleDeleteExpense = (cashFlow: CashFlow) => {
+        setExpenses(removeFromList(expenses, cashFlow));
+    };
+
+    const handleEditIncome = (cashFlow: CashFlow) => {
+        setActiveCashFlow(cashFlow);
+        setDialogTitle("Edit Income");
+        onOpen();
+    };
+
+    const handleEditExpense = (cashFlow: CashFlow) => {
+        setActiveCashFlow(cashFlow);
+        setDialogTitle("Edit Expense");
+        onOpen();
+    };
+
+    const handleDialogSave = (cashFlow: CashFlow) => {
+        // this is fucking awful
+        console.log(cashFlow);
+        onClose();
+
+        if (activeCashFlow && dialogTitle === "Edit Income") {
+            updateCashFlow(incomes, cashFlow);
+            setActiveCashFlow(undefined);
+        } else if (activeCashFlow && dialogTitle === "Edit Expense") {
+            updateCashFlow(expenses, cashFlow);
+            setActiveCashFlow(undefined);
+        } else if (dialogTitle === "Add Income") {
+            handleIncomeCreated(cashFlow);
+        } else if (dialogTitle === "Add Expense") {
+            handleExpenseCreated(cashFlow);
+        }
     };
 
     useEffect(() => {
@@ -131,61 +169,61 @@ const Filters: React.FC<FiltersProps> = ({
         });
     }, [startingYear, age, initialCapital, avgYearlyReturns, triType, triValue, incomes, expenses]);
 
-    const getFrequencyDescription = (cashFlow: CashFlow): string => {
-        if (cashFlow.recurrenceType === RecurrenceType.Once) {
-            return `Once in ${cashFlow.year}`;
-        } else if (cashFlow.recurrenceType === RecurrenceType.Recurring) {
-            const freqScope =
-                cashFlow.frequencyScope + (cashFlow.frequency && cashFlow.frequency > 1 ? "s" : "");
-            return `Every ${cashFlow.frequency} ${freqScope} starting in ${cashFlow.year}`;
-        }
-        return "";
-    };
-
     return (
         <>
             <Stack isInline spacing={0}>
-                <FilterSection title="Misc" paddingX="30px" paddingBottom="30px">
+                <FilterSection title="Misc" paddingX="30px" paddingBottom="30px" flexBasis={`${100 / 3}%`}>
                     <Stack isInline>
                         <FormControl flexBasis="50%">
                             <FormLabel htmlFor="startingYear">Starting Year</FormLabel>
-                            <Input
-                                type="number"
-                                id="startingYear"
-                                value={startingYear}
-                                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                                    setStartingYear(parseInt(e.currentTarget.value))
-                                }
-                            />
+
+                            <NumberInput
+                                min={1900}
+                                max={3000}
+                                defaultValue={startingYear}
+                                onChange={(value: React.ReactText) => setStartingYear(value as number)}
+                            >
+                                <NumberInputField id="startingYear" />
+                                <NumberInputStepper>
+                                    <NumberIncrementStepper />
+                                    <NumberDecrementStepper />
+                                </NumberInputStepper>
+                            </NumberInput>
                         </FormControl>
 
                         <FormControl flexBasis="50%">
                             <FormLabel htmlFor="age">Age</FormLabel>
-                            <Input
-                                type="text"
-                                id="age"
-                                value={age}
-                                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                                    setAge(parseInt(e.currentTarget.value) || undefined)
-                                }
-                            />
+
+                            <NumberInput
+                                precision={0}
+                                defaultValue={age}
+                                onChange={(value: React.ReactText) => setAge(value as number)}
+                            >
+                                <NumberInputField id="age" />
+                                <NumberInputStepper>
+                                    <NumberIncrementStepper />
+                                    <NumberDecrementStepper />
+                                </NumberInputStepper>
+                            </NumberInput>
                         </FormControl>
                     </Stack>
 
                     <Stack isInline marginTop="15px">
                         <FormControl flexBasis="50%">
-                            <FormLabel htmlFor="initialCapital">Initial Capital</FormLabel>
-                            <InputGroup>
-                                <Input
-                                    type="text"
-                                    id="initialCapital"
-                                    value={initialCapital}
-                                    onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                                        setInitialCapital(parseInt(e.currentTarget.value))
-                                    }
-                                />
-                                <InputRightElement children="$" color="gray.300" />
-                            </InputGroup>
+                            <FormLabel htmlFor="initialCapital">Initial Capital ($)</FormLabel>
+
+                            <NumberInput
+                                step={1000}
+                                precision={0}
+                                defaultValue={initialCapital}
+                                onChange={(value: React.ReactText) => setInitialCapital(value as number)}
+                            >
+                                <NumberInputField id="initialCapital" />
+                                <NumberInputStepper>
+                                    <NumberIncrementStepper />
+                                    <NumberDecrementStepper />
+                                </NumberInputStepper>
+                            </NumberInput>
                         </FormControl>
 
                         <FormControl flexBasis="50%">
@@ -237,40 +275,26 @@ const Filters: React.FC<FiltersProps> = ({
                             </InputGroup>
                         </Stack>
                     </FormControl>
+
+                    <FormControl flexBasis="50%">
+                        <FormLabel htmlFor="targetRetirementIncome">Target Retirement Income ($)</FormLabel>
+                        <NumberInput min={0} step={5000} defaultValue={40000} onChange={console.log}>
+                            <NumberInputField id="targetRetirementIncome" />
+                            <NumberInputStepper>
+                                <NumberIncrementStepper />
+                                <NumberDecrementStepper />
+                            </NumberInputStepper>
+                        </NumberInput>
+                    </FormControl>
                 </FilterSection>
 
-                <FilterSection title="Incomes" bg="#F8F9FC" paddingX={0}>
+                <FilterSection title="Incomes" bg="#F8F9FC" paddingX={0} flexBasis={`${100 / 3}%`}>
                     <Stack flex="1" justifyContent="space-between">
-                        <SimpleTable>
-                            <thead>
-                                <tr>
-                                    <th className="spacer"></th>
-                                    <th>Name</th>
-                                    <th>Amount</th>
-                                    <th>Frequency</th>
-                                    <th className="spacer"></th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {incomes.map((income) => {
-                                    return (
-                                        <tr key={income.id}>
-                                            <td className="spacer"></td>
-                                            <td>{income.name}</td>
-                                            <td>
-                                                <Currency
-                                                    quantity={income.amount}
-                                                    currency="CAD"
-                                                    pattern="###,### !"
-                                                />
-                                            </td>
-                                            <td>{getFrequencyDescription(income)}</td>
-                                            <td className="spacer"></td>
-                                        </tr>
-                                    );
-                                })}
-                            </tbody>
-                        </SimpleTable>
+                        <CashFlowTable
+                            items={incomes}
+                            onEdit={handleEditIncome}
+                            onDelete={handleDeleteIncome}
+                        />
 
                         <Button variantColor="blue" onClick={handleAddIncome} borderRadius={0}>
                             Add Income
@@ -278,38 +302,13 @@ const Filters: React.FC<FiltersProps> = ({
                     </Stack>
                 </FilterSection>
 
-                <FilterSection title="Expenses" paddingX={0}>
+                <FilterSection title="Expenses" paddingX={0} flexBasis={`${100 / 3}%`}>
                     <Stack flex="1" justifyContent="space-between">
-                        <SimpleTable>
-                            <thead>
-                                <tr>
-                                    <th className="spacer"></th>
-                                    <th>Name</th>
-                                    <th>Amount</th>
-                                    <th>Frequency</th>
-                                    <th className="spacer"></th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {expenses.map((expense) => {
-                                    return (
-                                        <tr key={expense.id}>
-                                            <td className="spacer"></td>
-                                            <td>{expense.name}</td>
-                                            <td>
-                                                <Currency
-                                                    quantity={expense.amount}
-                                                    currency="CAD"
-                                                    pattern="###,### !"
-                                                />
-                                            </td>
-                                            <td>{getFrequencyDescription(expense)}</td>
-                                            <td className="spacer"></td>
-                                        </tr>
-                                    );
-                                })}
-                            </tbody>
-                        </SimpleTable>
+                        <CashFlowTable
+                            items={expenses}
+                            onEdit={handleEditExpense}
+                            onDelete={handleDeleteExpense}
+                        />
 
                         <Button variantColor="red" onClick={handleAddExpense} borderRadius={0}>
                             Add Expense
@@ -322,8 +321,9 @@ const Filters: React.FC<FiltersProps> = ({
                 <ModalOverlay />
                 <EditCashFlowDialog
                     title={dialogTitle}
+                    cashFlow={activeCashFlow}
                     onCancel={onClose}
-                    onSave={dialogTitle === "Add Income" ? handleIncomeChange : handleExpenseChange} // this is flaky as fuck
+                    onSave={handleDialogSave}
                 />
             </Modal>
         </>

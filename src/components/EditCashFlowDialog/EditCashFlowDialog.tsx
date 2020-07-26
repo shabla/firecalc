@@ -18,23 +18,23 @@ import {
     ModalCloseButton,
 } from "@chakra-ui/core";
 
-import { RecurrenceType } from "../../values/RecurrenceType";
-import { FrequencyScope } from "../../values/FrequencyScope";
-import { CashFlow } from "../../models/CashFlow";
+import { RecurrenceType, FrequencyScope } from "values";
+import { CashFlow } from "models";
 
 interface EditCashFlowDialogProps {
     title: string;
+    cashFlow?: CashFlow;
     onCancel: () => void;
     onSave: (cashFlow: CashFlow) => void;
 }
 
-export const EditCashFlowDialog: React.FC<EditCashFlowDialogProps> = ({ title, onCancel, onSave }) => {
-    const [name, setName] = useState<string>("");
-    const [amount, setAmount] = useState<string>("");
-    const [recurrenceType, setRecurrenceType] = useState<string>(RecurrenceType.Once);
-    const [year, setYear] = useState<string>(`${new Date().getFullYear()}`);
-    const [frequency, setFrequency] = useState<string>("");
-    const [frequencyScope, setFrequencyScope] = useState<string>(FrequencyScope.Day);
+export const EditCashFlowDialog: React.FC<EditCashFlowDialogProps> = ({ title, cashFlow, onCancel, onSave }) => {
+    const [name, setName] = useState<string>(cashFlow?.name || "");
+    const [amount, setAmount] = useState<string>(cashFlow?.amount + "" || "");
+    const [recurrenceType, setRecurrenceType] = useState<string>(cashFlow?.recurrenceType || RecurrenceType.Once);
+    const [year, setYear] = useState<string>(`${cashFlow?.year || new Date().getFullYear()}`);
+    const [frequency, setFrequency] = useState<string>(cashFlow?.frequency + "" || "");
+    const [frequencyScope, setFrequencyScope] = useState<string>(cashFlow?.frequencyScope || FrequencyScope.Day);
 
     const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => setName(e.currentTarget.value);
     const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => setAmount(e.currentTarget.value);
@@ -89,7 +89,7 @@ export const EditCashFlowDialog: React.FC<EditCashFlowDialogProps> = ({ title, o
             <ModalBody>
                 <FormControl isRequired>
                     <FormLabel>Name</FormLabel>
-                    <Input type="text" isRequired isFullWidth value={name} onChange={handleNameChange} />
+                    <Input type="text" isRequired isFullWidth value={name} onChange={handleNameChange} autoFocus/>
                 </FormControl>
 
                 <FormControl isRequired marginTop="15px">
