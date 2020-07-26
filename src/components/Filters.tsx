@@ -1,71 +1,138 @@
 import React, { useState, useEffect } from "react";
-import Currency from "react-currency-formatter";
+import { v4 as uuidv4 } from "uuid";
 import {
-    Text,
-    Radio,
-    RadioGroup,
     Button,
-    Heading,
     InputGroup,
-    InputLeftElement,
     InputRightElement,
-    FormErrorMessage,
-    Icon,
     FormControl,
     FormLabel,
     Select,
     Input,
     Stack,
-    Box,
     Modal,
     ModalOverlay,
-    ModalContent,
-    ModalHeader,
-    ModalFooter,
-    ModalBody,
-    ModalCloseButton,
     useDisclosure,
 } from "@chakra-ui/core";
 
-// import FiltersMisc from "./FiltersMisc";
-// import Incomes from "./Incomes";
-// import Expenses from "./Expenses";
-
+import { EditCashFlowDialog } from "./EditCashFlowDialog/EditCashFlowDialog";
 import { FilterSection } from "./FilterSection";
+import { CashFlow } from "../models/CashFlow";
+import { FiltersValues } from "../models/FiltersValues";
+import { SafeWithdrawalType } from "../values/SafeWithdrawalType";
 
 interface FiltersProps {
-    onChange: (filters: Record<string, any>) => void;
+    defaultYear?: number;
+    defaultAge?: number;
+    defaultInitialCapital?: number;
+    defaultAvgYearlyReturns?: number;
+    defaultTriType?: string;
+    defaultTriValue?: number;
+    defaultIncomes?: CashFlow[];
+    defaultExpenses?: CashFlow[];
+    onChange: (filters: FiltersValues) => void;
 }
 
-enum TargetRetirementIncomeType {
-    Percentage = "percentage",
-    Fixed = "fixed",
-}
-
-const Filters: React.FC<FiltersProps> = ({ onChange }) => {
-    const [misc, setMisc] = useState({});
-    const [incomes, setIncomes] = useState([]);
-    const [expenses, setExpenses] = useState([]);
-
+const Filters: React.FC<FiltersProps> = ({
+    defaultYear = new Date().getFullYear(),
+    defaultAge,
+    defaultInitialCapital = 0,
+    defaultAvgYearlyReturns = 6,
+    defaultTriType = SafeWithdrawalType.Percentage,
+    defaultTriValue = 4,
+    defaultIncomes = [],
+    defaultExpenses = [],
+    onChange,
+}) => {
     const { isOpen, onOpen, onClose } = useDisclosure();
+    const [dialogTitle, setDialogTitle] = useState<string>("");
 
     // Misc
-    const [startingYear, setStartingYear] = useState<number>(new Date().getFullYear());
-    const [age, setAge] = useState<number | undefined>();
-    const [initialCapital, setInitialCapital] = useState<number>(0);
-    const [triType, setTriType] = useState<string>(TargetRetirementIncomeType.Percentage);
-    const [triValue, setTriValue] = useState<number>(4);
+    const [startingYear, setStartingYear] = useState<number>(defaultYear);
+    const [age, setAge] = useState<number | undefined>(defaultAge);
+    const [initialCapital, setInitialCapital] = useState<number>(defaultInitialCapital);
+    const [avgYearlyReturns, setAvgYearlyReturns] = useState<number>(defaultAvgYearlyReturns);
+    const [triType, setTriType] = useState<string>(defaultTriType);
+    const [triValue, setTriValue] = useState<number>(defaultTriValue);
+
+    // Incomes
+    const [incomes, setIncomes] = useState<CashFlow[]>(() =>
+        defaultIncomes.map((income) => {
+            if (!income.id) {
+                income.id = uuidv4();
+            }
+            return income;
+        })
+    );
+
+    // Expenses
+    const [expenses, setExpenses] = useState<CashFlow[]>(() =>
+        defaultExpenses.map((expense) => {
+            if (!expense.id) {
+                expense.id = uuidv4();
+            }
+            return expense;
+        })
+    );
+
+    const addCashFlow = (target: CashFlow[], cashFlow: CashFlow): CashFlow[] => {
+        if (cashFlow.id) {
+            // Update
+            const index = target.findIndex((item) => item.id === cashFlow.id);
+            if (index > -1) {
+                const newCashFlows = [...target];
+                newCashFlows[index] = cashFlow;
+                return newCashFlows;
+            }
+        } else {
+            // Create
+            cashFlow.id = uuidv4();
+            return [...target, cashFlow];
+        }
+        return target;
+    };
+
+    const handleIncomeChange = (cashFlow: CashFlow) => {
+        console.log(cashFlow);
+        onClose();
+        setIncomes(addCashFlow(incomes, cashFlow));
+    };
+
+    const handleExpenseChange = (cashFlow: CashFlow) => {
+        console.log(cashFlow);
+        onClose();
+        setExpenses(addCashFlow(expenses, cashFlow));
+    };
+
+    const handleAddIncome = () => {
+        setDialogTitle("Add Income");
+        onOpen();
+    };
+
+    const handleAddExpense = () => {
+        setDialogTitle("Add Expense");
+        onOpen();
+    };
 
     useEffect(() => {
-        onChange({ ...misc, incomes, expenses });
-    }, [misc, incomes, expenses]);
+        // TODO: bundle all the misc into an object
+        onChange({
+            startingYear,
+            age,
+            initialCapital,
+            avgYearlyReturns,
+            triType,
+            triValue,
+            incomes,
+            expenses,
+        });
+    }, [startingYear, age, initialCapital, avgYearlyReturns, triType, triValue, incomes, expenses]);
 
     return (
         <>
             <Stack isInline spacing={8}>
                 <FilterSection title="Misc">
                     <Stack isInline>
-                        <FormControl>
+                        <FormControl flexBasis="50%">
                             <FormLabel htmlFor="startingYear">Starting Year</FormLabel>
                             <Input
                                 type="number"
@@ -77,43 +144,64 @@ const Filters: React.FC<FiltersProps> = ({ onChange }) => {
                             />
                         </FormControl>
 
-                        <FormControl>
+                        <FormControl flexBasis="50%">
                             <FormLabel htmlFor="age">Age</FormLabel>
                             <Input
                                 type="text"
                                 id="age"
                                 value={age}
                                 onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                                    setAge(parseInt(e.currentTarget.value))
+                                    setAge(parseInt(e.currentTarget.value) || undefined)
                                 }
                             />
                         </FormControl>
                     </Stack>
 
-                    <FormControl>
-                        <FormLabel htmlFor="initialCapital">Initial Capital</FormLabel>
-                        <InputGroup>
-                            <Input
-                                type="text"
-                                id="initialCapital"
-                                value={initialCapital}
-                                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                                    setInitialCapital(parseInt(e.currentTarget.value))
-                                }
-                            />
-                            <InputRightElement children="$" color="gray.300" />
-                        </InputGroup>
-                    </FormControl>
+                    <Stack isInline marginTop="15px">
+                        <FormControl flexBasis="50%">
+                            <FormLabel htmlFor="initialCapital">Initial Capital</FormLabel>
+                            <InputGroup>
+                                <Input
+                                    type="text"
+                                    id="initialCapital"
+                                    value={initialCapital}
+                                    onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                                        setInitialCapital(parseInt(e.currentTarget.value))
+                                    }
+                                />
+                                <InputRightElement children="$" color="gray.300" />
+                            </InputGroup>
+                        </FormControl>
 
-                    <FormControl>
-                        <FormLabel htmlFor="targetRetirementIncome">Target Retirement Income</FormLabel>
+                        <FormControl flexBasis="50%">
+                            <FormLabel htmlFor="avgYearlyReturns">Avg Yearly Returns</FormLabel>
+                            <InputGroup>
+                                <Input
+                                    type="number"
+                                    id="avgYearlyReturns"
+                                    value={avgYearlyReturns}
+                                    onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                                        setAvgYearlyReturns(parseInt(e.currentTarget.value))
+                                    }
+                                />
+                                <InputRightElement children="%" color="gray.300" />
+                            </InputGroup>
+                        </FormControl>
+                    </Stack>
+
+                    <FormControl marginTop="15px">
+                        <FormLabel htmlFor="targetRetirementIncome">Minimum Retirement Withdrawal</FormLabel>
                         <Stack isInline>
-                            <Select value={triType} onChange={(e) => setTriType(e.currentTarget.value)}>
-                                <option value={TargetRetirementIncomeType.Percentage}>Percentage</option>
-                                <option value={TargetRetirementIncomeType.Fixed}>Fixed</option>
+                            <Select
+                                value={triType}
+                                onChange={(e) => setTriType(e.currentTarget.value)}
+                                flexBasis="50%"
+                            >
+                                <option value={SafeWithdrawalType.Percentage}>Percentage</option>
+                                <option value={SafeWithdrawalType.Fixed}>Fixed</option>
                             </Select>
 
-                            <InputGroup>
+                            <InputGroup flexBasis="50%">
                                 <Input
                                     type="number"
                                     id="triValue"
@@ -122,13 +210,13 @@ const Filters: React.FC<FiltersProps> = ({ onChange }) => {
                                         setTriValue(parseInt(e.currentTarget.value))
                                     }
                                     isInvalid={
-                                        triType === TargetRetirementIncomeType.Percentage
+                                        triType === SafeWithdrawalType.Percentage
                                             ? triValue > 100 || triValue <= 0
                                             : false
                                     }
                                 />
                                 <InputRightElement
-                                    children={triType === TargetRetirementIncomeType.Percentage ? "%" : "$"}
+                                    children={triType === SafeWithdrawalType.Percentage ? "%" : "$"}
                                     color="gray.300"
                                 />
                             </InputGroup>
@@ -138,7 +226,14 @@ const Filters: React.FC<FiltersProps> = ({ onChange }) => {
 
                 <FilterSection title="Incomes" bg="#F8F9FC">
                     <Stack>
-                        <Button variantColor="blue" onClick={onOpen}>
+                        {incomes.map((income) => {
+                            return (
+                                <div key={income.id}>
+                                    {income.name} - {income.amount}
+                                </div>
+                            );
+                        })}
+                        <Button variantColor="blue" onClick={handleAddIncome}>
                             Add Income
                         </Button>
                     </Stack>
@@ -146,73 +241,27 @@ const Filters: React.FC<FiltersProps> = ({ onChange }) => {
 
                 <FilterSection title="Expenses">
                     <Stack>
-                        <Button variantColor="red">Add Expense</Button>
+                        {expenses.map((expense) => {
+                            return (
+                                <div key={expense.id}>
+                                    {expense.name} - {expense.amount}
+                                </div>
+                            );
+                        })}
+                        <Button variantColor="red" onClick={handleAddExpense}>
+                            Add Expense
+                        </Button>
                     </Stack>
                 </FilterSection>
             </Stack>
 
-            <Modal isOpen={isOpen} onClose={onClose}>
+            <Modal isOpen={isOpen} closeOnOverlayClick={false} onClose={onClose}>
                 <ModalOverlay />
-                <ModalContent>
-                    <ModalHeader>
-                        <Heading size="lg" textAlign="center">
-                            Add Income
-                        </Heading>
-                    </ModalHeader>
-                    <ModalCloseButton />
-                    <ModalBody>
-                        <Stack isInline>
-                            <FormControl>
-                                <FormLabel>Name</FormLabel>
-                                <Input type="text" isRequired isFullWidth />
-                            </FormControl>
-                        </Stack>
-
-                        <Stack isInline>
-                            <FormControl>
-                                <FormLabel>Amount</FormLabel>
-                                <InputGroup>
-                                    <Input type="number" isFullWidth value={5000} />
-                                    <InputRightElement children="$" />
-                                </InputGroup>
-                            </FormControl>
-                        </Stack>
-
-                        <Stack isInline>
-                            <Radio value="once">once</Radio>
-                            <Text alignSelf="center">in year</Text>
-                            <Input type="text" value="2020" isFullWidth={false} />
-                        </Stack>
-
-                        <Stack isInline>
-                            <Radio value="recurring">recurring</Radio>
-                            <Stack>
-                                <Stack isInline>
-                                    <Text alignSelf="center">every</Text>
-                                    <Input type="number" value={3} />
-                                    <Select value="day">
-                                        <option value="day">Day</option>
-                                        <option value="week">Week</option>
-                                        <option value="month">Month</option>
-                                        <option value="year">Year</option>
-                                    </Select>
-                                </Stack>
-                                <Stack isInline>
-                                    <Text alignSelf="center">starting</Text>
-                                    <Input type="number" value={2020} />
-                                </Stack>
-                            </Stack>
-                        </Stack>
-                    </ModalBody>
-                    <ModalFooter>
-                        <Button onClick={onClose} marginRight="10px">
-                            Cancel
-                        </Button>
-                        <Button onClick={onClose} variantColor="blue">
-                            Save
-                        </Button>
-                    </ModalFooter>
-                </ModalContent>
+                <EditCashFlowDialog
+                    title={dialogTitle}
+                    onCancel={onClose}
+                    onSave={dialogTitle === "Add Income" ? handleIncomeChange : handleExpenseChange} // this is flaky as fuck
+                />
             </Modal>
         </>
     );

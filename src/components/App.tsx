@@ -3,255 +3,309 @@ import Currency from "react-currency-formatter";
 import { ThemeProvider, Stack, theme, CSSReset, Box } from "@chakra-ui/core";
 
 import Filters from "./Filters";
+import { FiltersValues } from "../models/FiltersValues";
+import { CashFlow } from "../models/CashFlow";
+import { RecurrenceType } from "../values/RecurrenceType";
+import { FrequencyScope } from "../values/FrequencyScope";
+import { SafeWithdrawalType } from "../values/SafeWithdrawalType";
 
-const columns = [
-    { title: "Year", dataIndex: "year", key: "year", width: 60 },
-    { title: "Age", dataIndex: "startingAge", key: "startingAge", width: 60 },
-    { title: "Income", dataIndex: "income", key: "income" },
-    { title: "Net Income", dataIndex: "netIncome", key: "netIncome" },
-    { title: "Expenses", dataIndex: "expenses", key: "expenses" },
-    { title: "Savings", dataIndex: "savings", key: "savings" },
-    { title: "Net Capital", dataIndex: "capital", key: "capital" },
-    { title: "Returns", dataIndex: "returns", key: "returns" },
-    { title: "Total Capital", dataIndex: "totalCapital", key: "totalCapital" },
-    { title: "Retirement Withdrawal", dataIndex: "retirementIncome", key: "retirementIncome" }
-];
-
-const FREQ = {
-    YEARLY: "yearly",
-    MONTHLY: "monthly",
-    BIWEEKLY: "biweekly",
-    WEEKLY: "weekly",
-    ONCE: "once"
+type RowItem = {
+    year: number;
+    age?: number | undefined;
+    startOfYearCapital: number;
+    income: number;
+    expenses: number;
+    savings: number;
+    returns: number;
+    totalCapital: number;
+    retirementWithdrawal: number;
+    ready: boolean;
 };
 
-const ROWS_TO_SHOW = 100;
+type ColumnDefinition = {
+    title: string;
+    key: string;
+    getData: (row: RowItem, column: ColumnDefinition) => any;
+    condition?: (filters: FiltersValues) => boolean;
+    getHeaderClasses?: (filters: FiltersValues) => string;
+    getCellClasses?: (row: RowItem) => string;
+};
+
+const columns = [
+    {
+        title: "Year",
+        key: "year",
+        getData: (row: RowItem, col: ColumnDefinition) => row.year,
+    },
+    {
+        title: "Age",
+        key: "age",
+        getData: (row: RowItem, col: ColumnDefinition) => row.age,
+        condition: (filters: FiltersValues): boolean => filters.age !== undefined,
+    },
+    {
+        title: "Start of Year\nCapital",
+        key: "startingCapital",
+        getData: (row: RowItem, col: ColumnDefinition) => (
+            <Currency quantity={row.startOfYearCapital} currency="CAD" pattern="###,### !" />
+        ),
+    },
+    {
+        title: "Retirement Withdrawal",
+        key: "retirementWithdrawal",
+        getData: (row: RowItem, col: ColumnDefinition) => (
+            <Currency quantity={row.retirementWithdrawal} currency="CAD" pattern="###,### !" />
+        ),
+    },
+    {
+        title: "Income",
+        key: "income",
+        getData: (row: RowItem, col: ColumnDefinition) => (
+            <Currency quantity={row.income} currency="CAD" pattern="###,### !" />
+        ),
+        getHeaderClasses: (filters: FiltersValues) => "border-left",
+        getCellClasses: (row: RowItem) => "border-left",
+    },
+    {
+        title: "Expenses",
+        key: "expenses",
+        getData: (row: RowItem, col: ColumnDefinition) => (
+            <Currency quantity={row.expenses} currency="CAD" pattern="###,### !" />
+        ),
+    },
+    {
+        title: "Savings",
+        key: "Savings",
+        getData: (row: RowItem, col: ColumnDefinition) => (
+            <Currency quantity={row.savings} currency="CAD" pattern="###,### !" />
+        ),
+        getHeaderClasses: (filters: FiltersValues) => "border-right",
+        getCellClasses: (row: RowItem) => "border-right",
+    },
+    {
+        title: "Returns",
+        key: "returns",
+        getData: (row: RowItem, col: ColumnDefinition) => (
+            <Currency quantity={row.returns} currency="CAD" pattern="###,### !" />
+        ),
+    },
+    {
+        title: "End of Year\n Capital",
+        key: "totalCapital",
+        getData: (row: RowItem, col: ColumnDefinition) => (
+            <Currency quantity={row.totalCapital} currency="CAD" pattern="###,### !" />
+        ),
+    },
+];
+
+const ROWS_TO_SHOW = 70;
 
 const App = () => {
-    // const [startingYear, setStartingYear] = useState(new Date().getFullYear());
-    // const [startingAge, setStartingAge] = useState(30);
-    // const [endAge, setEndAge] = useState(75);
-    // const [initialSalary, setInitialSalary] = useState(40000);
-    // const [yearlySalaryIncrease, setYearlySalaryIncrease] = useState(0);
-    // const [incomeTaxes, setIncomeTaxes] = useState(30);
-    // const [monthlyExpenses, setMonthlyExpenses] = useState(2000);
-    // const [yearlyExpensesIncrease, setYearlyExpensesIncrease] = useState(0);
-    // const [averageYearlyReturns, setAverageYearlyReturns] = useState(6);
-    // const [initialCapital, setInitialCapital] = useState(0);
-    // const [targetRetirementIncome, setTargetRetirementIncome] = useState(30000);
-    // const [targetCapitalFraction, setTargetCapitalFraction] = useState(4);
+    const [filters, setFilters] = useState<FiltersValues>({
+        startingYear: 2020,
+        age: 31,
+        initialCapital: 5000,
+        avgYearlyReturns: 6,
+        triType: "percentage",
+        triValue: 4,
+        incomes: [
+            {
+                name: "Bonus thingie",
+                amount: 1234,
+                recurrenceType: "once",
+                year: 2021,
+                id: "706139e3-be1b-4410-a137-047b64f1849c",
+            },
+            {
+                name: "Payroll",
+                amount: 2400,
+                recurrenceType: "recurring",
+                frequency: 2,
+                frequencyScope: "week",
+                year: 2020,
+                id: "7z6139e3-be1b-4410-a137-047b64f1849c",
+            },
+        ],
+        expenses: [
+            {
+                name: "everything",
+                amount: 30000,
+                recurrenceType: "recurring",
+                frequency: 1,
+                frequencyScope: "year",
+                year: 2020,
+                id: "7z6139e3-be1b-4a10-a137-047b64f1849c",
+            },
+        ],
+    });
 
-    // const [incomes, setIncomes] = useState([
-    //     // {value: 100, freq: FREQ.MONTHLY}
-    // ]);
-
-    // const getYears = (start, end) => {
-    //     const years = [];
-    //     for (let year = start; year <= end; year++) {
-    //         years.push(year);
-    //     }
-    //     return years;
-    // };
-
-    // const [years, setYears] = useState(getYears(startingYear, startingYear + endAge - startingAge));
-
-    // useEffect(() => {
-    //     setYears(getYears(startingYear, startingYear + endAge - startingAge));
-    // }, [startingYear, endAge]);
-
-    // const generateData = () => {
-    //     let prevYearCapital = initialCapital;
-    //     let prevYearRetirementIncome = prevYearCapital * (targetCapitalFraction / 100);
-
-    //     return years.map((year, i) => {
-    //         const item = {
-    //             key: year,
-    //             year,
-    //             startingAge: startingAge + i
-    //         };
-
-    //         const isRetired = prevYearRetirementIncome >= targetRetirementIncome;
-
-    //         item.test = incomes.reduce((acc, income) => {
-    //             return {
-    //                 [FREQ.YEARLY]: (total, value) => total + value,
-    //                 [FREQ.MONTHLY]: (total, value) => total + value * 12,
-    //                 [FREQ.BIWEEKLY]: (total, value) => total + value * 26,
-    //                 [FREQ.WEEKLY]: (total, value) => total + value * 52,
-    //                 [FREQ.ONCE]: (total, value) => total + value
-    //             }[income.freq](acc, income.value);
-    //         }, 0);
-
-    //         item.income = isRetired ? 0 : Math.pow(1 + yearlySalaryIncrease / 100, i) * initialSalary;
-
-    //         item.netIncome = isRetired ? prevYearRetirementIncome : item.income * (1 - incomeTaxes / 100);
-
-    //         item.expenses = Math.pow(1 + yearlyExpensesIncrease / 100, i) * monthlyExpenses * 12;
-
-    //         item.savings = item.netIncome - item.expenses;
-
-    //         item.capital = isRetired
-    //             ? prevYearCapital - prevYearRetirementIncome + item.savings
-    //             : prevYearCapital + item.savings;
-
-    //         item.returns = item.capital * (averageYearlyReturns / 100);
-    //         item.totalCapital = item.capital + item.returns;
-    //         item.retirementIncome = item.totalCapital * (targetCapitalFraction / 100);
-
-    //         prevYearCapital = item.totalCapital;
-    //         prevYearRetirementIncome = item.retirementIncome;
-
-    //         return item;
-    //     });
-    // };
-
-    // const addIncome = newIncome => {
-    //     console.log(newIncome);
-    //     setIncomes([...incomes, newIncome]);
-    // };
-
-    // const data = generateData();
-
-    const onFiltersChange = (values: any) => {
-        console.log("filters", values);
+    const calculateCashFlow = (year: number, cashFlows: CashFlow[]): number => {
+        let total = 0;
+        cashFlows.forEach((cashFlow) => {
+            if (cashFlow.recurrenceType === RecurrenceType.Once) {
+                if (year === cashFlow.year) {
+                    total += cashFlow.amount;
+                }
+            } else if (cashFlow.recurrenceType === RecurrenceType.Recurring) {
+                if (year >= cashFlow.year) {
+                    const freq = cashFlow.frequency as number;
+                    // calc the total for the year
+                    switch (cashFlow.frequencyScope) {
+                        case FrequencyScope.Day:
+                            total += cashFlow.amount * (365 / freq);
+                            break;
+                        case FrequencyScope.Week:
+                            total += cashFlow.amount * (52 / freq);
+                            break;
+                        case FrequencyScope.Month:
+                            total += cashFlow.amount * (12 / freq);
+                            break;
+                        case FrequencyScope.Year:
+                            total += cashFlow.amount * (1 / freq);
+                            break;
+                    }
+                }
+            }
+        });
+        return total;
     };
+
+    const onFiltersChange = (filters: FiltersValues) => {
+        console.log("filters", filters);
+
+        const rows: RowItem[] = [];
+
+        for (let i = 0; i < ROWS_TO_SHOW; i++) {
+            // Year
+            const year = filters.startingYear + i;
+
+            // Age
+            let age;
+            if (filters.age) {
+                age = filters.age + i;
+            }
+
+            // Capital at the start of the year
+            let startOfYearCapital = 0;
+            if (i === 0) {
+                startOfYearCapital = filters.initialCapital;
+            } else {
+                startOfYearCapital = rows[i - 1].totalCapital;
+            }
+
+            // Potential Withdrawal Rate at start of year
+            let retirementWithdrawal = 0;
+            let ready = false;
+            if (filters.triType === SafeWithdrawalType.Percentage) {
+                retirementWithdrawal = startOfYearCapital * (filters.triValue / 100);
+            } else if (filters.triType === SafeWithdrawalType.Fixed) {
+                let returnsFromLastYear = 0;
+                if (i > 0) {
+                    returnsFromLastYear = rows[i - 1].returns;
+                }
+                retirementWithdrawal = returnsFromLastYear;
+
+                if (retirementWithdrawal >= filters.triValue) {
+                    ready = true;
+                }
+            }
+
+            // Income for this year
+            let income = calculateCashFlow(year, filters.incomes);
+
+            // Expenses for this year
+            const expenses = calculateCashFlow(year, filters.expenses);
+
+            // Savings
+            const savings = income - expenses;
+
+            const totalCapitalBeforeReturns = startOfYearCapital + savings;
+
+            const returns = totalCapitalBeforeReturns * (filters.avgYearlyReturns / 100);
+
+            const endOfYearTotalCapital = totalCapitalBeforeReturns + returns;
+
+            const row: RowItem = {
+                year,
+                age,
+                startOfYearCapital,
+                income,
+                expenses,
+                savings,
+                returns,
+                totalCapital: endOfYearTotalCapital,
+                retirementWithdrawal,
+                ready,
+            };
+
+            rows.push(row);
+        }
+
+        console.log("rows", rows);
+
+        setFilters(filters);
+        setRows(rows);
+    };
+
+    const [rows, setRows] = useState<RowItem[]>([]);
 
     return (
         <ThemeProvider theme={theme}>
             <CSSReset />
-            
-            <Filters onChange={onFiltersChange} />
+
+            <Filters
+                defaultAge={filters.age}
+                defaultInitialCapital={filters.initialCapital}
+                defaultAvgYearlyReturns={filters.avgYearlyReturns}
+                defaultTriType={filters.triType}
+                defaultTriValue={filters.triValue}
+                defaultIncomes={filters.incomes}
+                defaultExpenses={filters.expenses}
+                onChange={onFiltersChange}
+            />
 
             <Stack>
                 <table className="the-table">
                     <thead>
                         <tr>
-                            {columns.map(col => {
-                                return <th key={`th-${col.key}`}>{col.title}</th>;
+                            {columns.map((col) => {
+                                if (col.condition && !col.condition(filters)) {
+                                    return;
+                                }
+                                return (
+                                    <th
+                                        key={`th-${col.key}`}
+                                        className={col.getHeaderClasses && col.getHeaderClasses(filters)}
+                                    >
+                                        {col.title.split("\n").map((letters) => (
+                                            <div>{letters}</div>
+                                        ))}
+                                    </th>
+                                );
                             })}
                         </tr>
                     </thead>
 
                     <tbody>
-                        {/* {columns.map(col => {
-                            const colProps = {};
-                            if (!["year", "startingAge", "empty", "capitalFraction"].includes(col.dataIndex)) {
-                                colProps.render = v => (
-                                    <Currency quantity={v} currency="CAD" pattern="###,### !" />
-                                );
-                            }
-
-                            return <tr></tr>;
-                        })} */}
+                        {rows.map((row) => {
+                            return (
+                                <tr key={row.year} className={row.ready ? "ready" : undefined}>
+                                    {columns.map((col) => {
+                                        if (col.condition && !col.condition(filters)) {
+                                            return;
+                                        }
+                                        return (
+                                            <td key={row.year + "-" + col.key} className={col.getCellClasses && col.getCellClasses(row)}>
+                                                {col.getData(row, col)}
+                                            </td>
+                                        );
+                                    })}
+                                </tr>
+                            );
+                        })}
                     </tbody>
                 </table>
             </Stack>
-
-
-            {/* <FiltersColContainer>
-
-
-                <FiltersCol>
-                    <FiltersColTitle>Income</FiltersColTitle>
-
-                    <FormField>
-                        <span>Salary ($)</span>
-                        <InputNumber
-                            size="small"
-                            value={initialSalary}
-                            onChange={setInitialSalary}
-                            precision={0}
-                            step={1000}
-                            min={0}
-                            max={999999999}
-                        />
-                    </FormField>
-
-                    <FormField>
-                        <span>Yearly Salary Increase (%)</span>
-                        <InputNumber
-                            size="small"
-                            value={yearlySalaryIncrease}
-                            onChange={setYearlySalaryIncrease}
-                            precision={2}
-                            formatter={v => `${v}%`}
-                            parser={value => value.replace("%", "")}
-                            step={0.5}
-                            min={0}
-                            max={10}
-                        />
-                    </FormField>
-
-                    <FormField>
-                        <span>Average Yearly Returns (%)</span>
-                        <InputNumber
-                            size="small"
-                            value={averageYearlyReturns}
-                            onChange={setAverageYearlyReturns}
-                            precision={1}
-                            formatter={v => `${v}%`}
-                            parser={value => value.replace("%", "")}
-                            step={0.5}
-                            min={0}
-                            max={100}
-                        />
-                    </FormField>
-
-                    <hr />
-
-                    <NewIncomeForm freqs={FREQ} years={years} onAdd={addIncome} />
-
-                    <pre>{JSON.stringify(incomes, null, 4)}</pre>
-                </FiltersCol>
-
-                <FiltersCol>
-                    <FiltersColTitle>Expenses</FiltersColTitle>
-
-                    <FormField>
-                        <span>Income Taxes (%)</span>
-                        <InputNumber
-                            value={incomeTaxes}
-                            onChange={setIncomeTaxes}
-                            precision={1}
-                            formatter={v => `${v}%`}
-                            parser={value => value.replace("%", "")}
-                            step={0.5}
-                            min={0}
-                            max={100}
-                        />
-                    </FormField>
-
-                    <FormField>
-                        <span>Monthly Expenses ($)</span>
-                        <InputNumber
-                            value={monthlyExpenses}
-                            onChange={setMonthlyExpenses}
-                            precision={0}
-                            formatter={v => `${v}$`}
-                            parser={value => value.replace("$", "")}
-                            step={100}
-                            min={0}
-                            max={100000}
-                        />
-                    </FormField>
-
-                    <FormField>
-                        <span>Yearly Expenses Increase (%)</span>
-                        <InputNumber
-                            value={yearlyExpensesIncrease}
-                            onChange={setYearlyExpensesIncrease}
-                            precision={1}
-                            formatter={v => `${v}%`}
-                            parser={value => value.replace("%", "")}
-                            step={0.5}
-                            min={0}
-                            max={100}
-                        />
-                    </FormField>
-                </FiltersCol>
-            </FiltersColContainer>
-
-            */}
         </ThemeProvider>
     );
 };
