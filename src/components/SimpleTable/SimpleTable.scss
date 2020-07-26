@@ -1,0 +1,32 @@
+.simple-table {
+    thead {
+        background: #333439;
+
+        th {
+            text-align: left;
+            font-weight: 500;
+            color: white;
+            padding: 10px 8px;
+        }
+    }
+
+    tbody {
+        tr {
+            &:nth-of-type(even) {
+                background: #F8FBFD;
+            }
+
+            td {
+                padding: 6px 8px;
+            }
+        }
+    }
+
+    th, td {
+        font-size: 14px;
+
+        &.spacer {
+            width: 15px;
+        }
+    }
+}

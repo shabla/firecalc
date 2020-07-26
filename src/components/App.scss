@@ -3,15 +3,6 @@ body {
 }
 
 .the-table {
-    thead {
-        background: #333439;
-        color: white;
-
-        th {
-            padding: 12px 5px;
-        }
-    }
-
     tr {
         &.ready {
             background-color: green;
@@ -19,15 +10,11 @@ body {
     }
 
     td {
-        text-align: center;
-
         &.border-left {
             border-left: 2px solid #333439;
         }
         &.border-right {
             border-right: 2px solid #333439;
         }
-
-        
     }
 }

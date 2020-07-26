@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from "react";
+import Currency from "react-currency-formatter";
 import { v4 as uuidv4 } from "uuid";
 import {
     Button,
+    Box,
     InputGroup,
     InputRightElement,
     FormControl,
@@ -19,6 +21,8 @@ import { FilterSection } from "./FilterSection";
 import { CashFlow } from "../models/CashFlow";
 import { FiltersValues } from "../models/FiltersValues";
 import { SafeWithdrawalType } from "../values/SafeWithdrawalType";
+import { SimpleTable } from "components";
+import { RecurrenceType } from "values";
 
 interface FiltersProps {
     defaultYear?: number;
@@ -127,10 +131,21 @@ const Filters: React.FC<FiltersProps> = ({
         });
     }, [startingYear, age, initialCapital, avgYearlyReturns, triType, triValue, incomes, expenses]);
 
+    const getFrequencyDescription = (cashFlow: CashFlow): string => {
+        if (cashFlow.recurrenceType === RecurrenceType.Once) {
+            return `Once in ${cashFlow.year}`;
+        } else if (cashFlow.recurrenceType === RecurrenceType.Recurring) {
+            const freqScope =
+                cashFlow.frequencyScope + (cashFlow.frequency && cashFlow.frequency > 1 ? "s" : "");
+            return `Every ${cashFlow.frequency} ${freqScope} starting in ${cashFlow.year}`;
+        }
+        return "";
+    };
+
     return (
         <>
-            <Stack isInline spacing={8}>
-                <FilterSection title="Misc">
+            <Stack isInline spacing={0}>
+                <FilterSection title="Misc" paddingX="30px" paddingBottom="30px">
                     <Stack isInline>
                         <FormControl flexBasis="50%">
                             <FormLabel htmlFor="startingYear">Starting Year</FormLabel>
@@ -224,31 +239,79 @@ const Filters: React.FC<FiltersProps> = ({
                     </FormControl>
                 </FilterSection>
 
-                <FilterSection title="Incomes" bg="#F8F9FC">
-                    <Stack>
-                        {incomes.map((income) => {
-                            return (
-                                <div key={income.id}>
-                                    {income.name} - {income.amount}
-                                </div>
-                            );
-                        })}
-                        <Button variantColor="blue" onClick={handleAddIncome}>
+                <FilterSection title="Incomes" bg="#F8F9FC" paddingX={0}>
+                    <Stack flex="1" justifyContent="space-between">
+                        <SimpleTable>
+                            <thead>
+                                <tr>
+                                    <th className="spacer"></th>
+                                    <th>Name</th>
+                                    <th>Amount</th>
+                                    <th>Frequency</th>
+                                    <th className="spacer"></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {incomes.map((income) => {
+                                    return (
+                                        <tr key={income.id}>
+                                            <td className="spacer"></td>
+                                            <td>{income.name}</td>
+                                            <td>
+                                                <Currency
+                                                    quantity={income.amount}
+                                                    currency="CAD"
+                                                    pattern="###,### !"
+                                                />
+                                            </td>
+                                            <td>{getFrequencyDescription(income)}</td>
+                                            <td className="spacer"></td>
+                                        </tr>
+                                    );
+                                })}
+                            </tbody>
+                        </SimpleTable>
+
+                        <Button variantColor="blue" onClick={handleAddIncome} borderRadius={0}>
                             Add Income
                         </Button>
                     </Stack>
                 </FilterSection>
 
-                <FilterSection title="Expenses">
-                    <Stack>
-                        {expenses.map((expense) => {
-                            return (
-                                <div key={expense.id}>
-                                    {expense.name} - {expense.amount}
-                                </div>
-                            );
-                        })}
-                        <Button variantColor="red" onClick={handleAddExpense}>
+                <FilterSection title="Expenses" paddingX={0}>
+                    <Stack flex="1" justifyContent="space-between">
+                        <SimpleTable>
+                            <thead>
+                                <tr>
+                                    <th className="spacer"></th>
+                                    <th>Name</th>
+                                    <th>Amount</th>
+                                    <th>Frequency</th>
+                                    <th className="spacer"></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {expenses.map((expense) => {
+                                    return (
+                                        <tr key={expense.id}>
+                                            <td className="spacer"></td>
+                                            <td>{expense.name}</td>
+                                            <td>
+                                                <Currency
+                                                    quantity={expense.amount}
+                                                    currency="CAD"
+                                                    pattern="###,### !"
+                                                />
+                                            </td>
+                                            <td>{getFrequencyDescription(expense)}</td>
+                                            <td className="spacer"></td>
+                                        </tr>
+                                    );
+                                })}
+                            </tbody>
+                        </SimpleTable>
+
+                        <Button variantColor="red" onClick={handleAddExpense} borderRadius={0}>
                             Add Expense
                         </Button>
                     </Stack>

@@ -8,6 +8,9 @@ import { CashFlow } from "../models/CashFlow";
 import { RecurrenceType } from "../values/RecurrenceType";
 import { FrequencyScope } from "../values/FrequencyScope";
 import { SafeWithdrawalType } from "../values/SafeWithdrawalType";
+import { SimpleTable } from "components"
+
+import "./App.scss";
 
 type RowItem = {
     year: number;
@@ -265,7 +268,7 @@ const App = () => {
             />
 
             <Stack>
-                <table className="the-table">
+                <SimpleTable className="the-table">
                     <thead>
                         <tr>
                             {columns.map((col) => {
@@ -277,8 +280,8 @@ const App = () => {
                                         key={`th-${col.key}`}
                                         className={col.getHeaderClasses && col.getHeaderClasses(filters)}
                                     >
-                                        {col.title.split("\n").map((letters) => (
-                                            <div>{letters}</div>
+                                        {col.title.split("\n").map((letters, index) => (
+                                            <div key={index}>{letters}</div>
                                         ))}
                                     </th>
                                 );
@@ -304,7 +307,7 @@ const App = () => {
                             );
                         })}
                     </tbody>
-                </table>
+                </SimpleTable>
             </Stack>
         </ThemeProvider>
     );
