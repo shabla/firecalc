@@ -28,13 +28,22 @@ interface EditCashFlowDialogProps {
     onSave: (cashFlow: CashFlow) => void;
 }
 
-export const EditCashFlowDialog: React.FC<EditCashFlowDialogProps> = ({ title, cashFlow, onCancel, onSave }) => {
+export const EditCashFlowDialog: React.FC<EditCashFlowDialogProps> = ({
+    title,
+    cashFlow,
+    onCancel,
+    onSave,
+}) => {
     const [name, setName] = useState<string>(cashFlow?.name || "");
     const [amount, setAmount] = useState<string>(cashFlow?.amount + "" || "");
-    const [recurrenceType, setRecurrenceType] = useState<string>(cashFlow?.recurrenceType || RecurrenceType.Once);
+    const [recurrenceType, setRecurrenceType] = useState<string>(
+        cashFlow?.recurrenceType || RecurrenceType.Once
+    );
     const [year, setYear] = useState<string>(`${cashFlow?.year || new Date().getFullYear()}`);
     const [frequency, setFrequency] = useState<string>(cashFlow?.frequency + "" || "");
-    const [frequencyScope, setFrequencyScope] = useState<string>(cashFlow?.frequencyScope || FrequencyScope.Day);
+    const [frequencyScope, setFrequencyScope] = useState<string>(
+        cashFlow?.frequencyScope || FrequencyScope.Day
+    );
 
     const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => setName(e.currentTarget.value);
     const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => setAmount(e.currentTarget.value);
@@ -88,22 +97,33 @@ export const EditCashFlowDialog: React.FC<EditCashFlowDialogProps> = ({ title, c
             <ModalCloseButton />
             <ModalBody>
                 <FormControl isRequired>
-                    <FormLabel>Name</FormLabel>
-                    <Input type="text" isRequired isFullWidth value={name} onChange={handleNameChange} autoFocus/>
+                    <Stack isInline alignItems="center">
+                        <FormLabel flex="0 0 120px">Description</FormLabel>
+                        <Input
+                            type="text"
+                            isRequired
+                            isFullWidth
+                            value={name}
+                            onChange={handleNameChange}
+                            autoFocus
+                        />
+                    </Stack>
                 </FormControl>
 
                 <FormControl isRequired marginTop="15px">
-                    <FormLabel>Amount</FormLabel>
-                    <InputGroup>
-                        <Input
-                            type="number"
-                            isFullWidth
-                            isRequired
-                            value={amount}
-                            onChange={handleAmountChange}
-                        />
-                        <InputRightElement children="$" />
-                    </InputGroup>
+                    <Stack isInline alignItems="center">
+                        <FormLabel flex="0 0 120px">Amount</FormLabel>
+                        <InputGroup flex="1">
+                            <Input
+                                type="number"
+                                isFullWidth
+                                isRequired
+                                value={amount}
+                                onChange={handleAmountChange}
+                            />
+                            <InputRightElement children="$" />
+                        </InputGroup>
+                    </Stack>
                 </FormControl>
 
                 <FormControl isRequired marginTop="15px">
