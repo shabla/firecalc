@@ -114,8 +114,6 @@ export const App = () => {
     const [rows, setRows] = useState<RowItem[]>([]);
     const [filters, setFilters] = useState<FiltersValues>(getDefaultSettings());
 
-    console.log(filters)
-
     const calculateCashFlow = (year: number, cashFlows: CashFlow[]): number => {
         let total = 0;
         cashFlows.forEach((cashFlow) => {
@@ -148,10 +146,6 @@ export const App = () => {
     };
 
     const onFiltersChange = useCallback((filters: FiltersValues) => {
-        console.log("filters", filters);
-
-        saveToLocalStorage("filters", filters);
-
         const rows: RowItem[] = [];
 
         for (let i = 0; i < ROWS_TO_SHOW; i++) {
@@ -207,8 +201,7 @@ export const App = () => {
             rows.push(row);
         }
 
-        console.log("rows", rows);
-
+        saveToLocalStorage("filters", filters);
         setFilters(filters);
         setRows(rows);
     }, []);

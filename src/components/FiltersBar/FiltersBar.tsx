@@ -51,7 +51,9 @@ export const FiltersBar: React.FC<FiltersBarProps> = ({
     const [age, setAge] = useState<number | undefined>(defaultValues.age);
     const [initialCapital, setInitialCapital] = useState<number>(defaultValues.initialCapital);
     const [avgYearlyReturns, setAvgYearlyReturns] = useState<number>(defaultValues.avgYearlyReturns);
-    const [retirementIncomeTarget, setRetirementIncomeTarget] = useState<number>(defaultValues.retirementIncomeTarget);
+    const [retirementIncomeTarget, setRetirementIncomeTarget] = useState<number>(
+        defaultValues.retirementIncomeTarget
+    );
     const [withdrawalRate, setWithdrawalRate] = useState<number>(defaultValues.withdrawalRate);
 
     // Incomes
@@ -73,31 +75,6 @@ export const FiltersBar: React.FC<FiltersBarProps> = ({
             return expense;
         })
     );
-
-    const updateCashFlow = (target: CashFlow[], cashFlow: CashFlow): CashFlow[] => {
-        console.log("find ", cashFlow, "in", target);
-        if (cashFlow.id) {
-            // Update
-            const index = target.findIndex((item) => item.id === cashFlow.id);
-            if (index > -1) {
-                const newCashFlows = [...target];
-                newCashFlows[index] = { ...cashFlow };
-                return newCashFlows;
-            }
-        } else {
-            // Create
-            return [...target, { ...cashFlow, id: uuidv4() }];
-        }
-        return target;
-    };
-
-    const handleIncomeCreated = (cashFlow: CashFlow) => {
-        setIncomes(updateCashFlow(incomes, cashFlow));
-    };
-
-    const handleExpenseCreated = (cashFlow: CashFlow) => {
-        setExpenses(updateCashFlow(expenses, cashFlow));
-    };
 
     const handleAddIncome = () => {
         setDialogTitle("Add Income");
@@ -129,22 +106,36 @@ export const FiltersBar: React.FC<FiltersBarProps> = ({
         onOpen();
     };
 
-    const handleDialogSave = (cashFlow: CashFlow) => {
-        // this is fucking awful
-        console.log(cashFlow);
-        onClose();
+    const updateCashFlow = (target: CashFlow[], cashFlow: CashFlow): CashFlow[] => {
+        const index = target.findIndex((item) => item.id === cashFlow.id);
 
-        if (activeCashFlow && dialogTitle === "Edit Income") {
-            updateCashFlow(incomes, cashFlow);
-            setActiveCashFlow(undefined);
-        } else if (activeCashFlow && dialogTitle === "Edit Expense") {
-            updateCashFlow(expenses, cashFlow);
-            setActiveCashFlow(undefined);
-        } else if (dialogTitle === "Add Income") {
-            handleIncomeCreated(cashFlow);
-        } else if (dialogTitle === "Add Expense") {
-            handleExpenseCreated(cashFlow);
+        if (index > -1) {
+            // Update
+            const newCashFlows = [...target];
+            newCashFlows[index] = { ...cashFlow };
+            
+            return newCashFlows;
+        } else {
+            // Create
+            return [...target, cashFlow];
         }
+    };
+
+    const handleDialogSave = (cashFlow: CashFlow) => {
+        if (!cashFlow.id) {
+            cashFlow = { ...cashFlow, id: uuidv4() };
+        }
+
+        // this is sketchy, find a better way
+        if ((activeCashFlow && dialogTitle === "Edit Income") || dialogTitle === "Add Income") {
+            setIncomes(updateCashFlow(incomes, cashFlow));
+            setActiveCashFlow(undefined);
+        } else if ((activeCashFlow && dialogTitle === "Edit Expense") || dialogTitle === "Add Expense") {
+            setExpenses(updateCashFlow(expenses, cashFlow));
+            setActiveCashFlow(undefined);
+        }
+
+        onClose();
     };
 
     useEffect(() => {
@@ -283,7 +274,9 @@ export const FiltersBar: React.FC<FiltersBarProps> = ({
                                 min={0}
                                 step={5000}
                                 defaultValue={retirementIncomeTarget}
-                                onChange={(value: React.ReactText) => setRetirementIncomeTarget(value as number)}
+                                onChange={(value: React.ReactText) =>
+                                    setRetirementIncomeTarget(value as number)
+                                }
                                 size="sm"
                             >
                                 <NumberInputField id="retirementIncomeTarget" />

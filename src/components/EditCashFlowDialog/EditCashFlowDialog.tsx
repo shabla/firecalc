@@ -73,6 +73,7 @@ export const EditCashFlowDialog: React.FC<EditCashFlowDialogProps> = ({
         }
 
         onSave({
+            ...cashFlow,
             name,
             amount: parseInt(amount),
             recurrenceType,
