@@ -11,7 +11,6 @@ import {
     NumberIncrementStepper,
     NumberDecrementStepper,
     FormLabel,
-    Select,
     Input,
     Stack,
     Modal,
@@ -23,7 +22,6 @@ import { EditCashFlowDialog } from "../EditCashFlowDialog/EditCashFlowDialog";
 import { FilterSection } from "./FilterSection";
 import { removeFromList } from "utils";
 import { CashFlowTable } from "components";
-import { SafeWithdrawalType } from "values";
 import { CashFlow, FiltersValues } from "models";
 
 interface FiltersBarProps {

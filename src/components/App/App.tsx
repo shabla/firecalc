@@ -4,8 +4,8 @@ import { ThemeProvider, Stack, theme, CSSReset } from "@chakra-ui/core";
 
 import { SimpleTable, FiltersBar } from "components";
 import { FiltersValues, CashFlow } from "models";
-import { RecurrenceType, FrequencyScope, SafeWithdrawalType } from "values";
-import { getDefaultSettings } from "utils";
+import { RecurrenceType, FrequencyScope } from "values";
+import { getDefaultSettings, saveToLocalStorage } from "utils";
 
 import "./App.scss";
 
@@ -114,6 +114,8 @@ export const App = () => {
     const [rows, setRows] = useState<RowItem[]>([]);
     const [filters, setFilters] = useState<FiltersValues>(getDefaultSettings());
 
+    console.log(filters)
+
     const calculateCashFlow = (year: number, cashFlows: CashFlow[]): number => {
         let total = 0;
         cashFlows.forEach((cashFlow) => {
@@ -147,6 +149,8 @@ export const App = () => {
 
     const onFiltersChange = useCallback((filters: FiltersValues) => {
         console.log("filters", filters);
+
+        saveToLocalStorage("filters", filters);
 
         const rows: RowItem[] = [];
 
