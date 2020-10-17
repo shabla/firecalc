@@ -1,6 +1,6 @@
-import React, { useState } from "react";
+import React, { useState, useCallback } from "react";
 import Currency from "react-currency-formatter";
-import { ThemeProvider, Stack, theme, CSSReset, Box } from "@chakra-ui/core";
+import { ThemeProvider, Stack, theme, CSSReset } from "@chakra-ui/core";
 
 import { SimpleTable, FiltersBar } from "components";
 import { FiltersValues, CashFlow } from "models";
@@ -145,7 +145,7 @@ export const App = () => {
         return total;
     };
 
-    const onFiltersChange = (filters: FiltersValues) => {
+    const onFiltersChange = useCallback((filters: FiltersValues) => {
         console.log("filters", filters);
 
         const rows: RowItem[] = [];
@@ -169,21 +169,8 @@ export const App = () => {
             }
 
             // Potential Withdrawal Rate at start of year
-            let retirementWithdrawal = 0;
-            let ready = false;
-            if (filters.triType === SafeWithdrawalType.Percentage) {
-                retirementWithdrawal = startOfYearCapital * (filters.triValue / 100);
-            } else if (filters.triType === SafeWithdrawalType.Fixed) {
-                let returnsFromLastYear = 0;
-                if (i > 0) {
-                    returnsFromLastYear = rows[i - 1].returns;
-                }
-                retirementWithdrawal = returnsFromLastYear;
-
-                if (retirementWithdrawal >= filters.triValue) {
-                    ready = true;
-                }
-            }
+            const retirementWithdrawal = startOfYearCapital * (filters.withdrawalRate / 100);
+            const ready = retirementWithdrawal >= filters.retirementIncomeTarget;
 
             // Income for this year
             let income = calculateCashFlow(year, filters.incomes);
@@ -220,23 +207,14 @@ export const App = () => {
 
         setFilters(filters);
         setRows(rows);
-    };
+    }, []);
 
     return (
         <ThemeProvider theme={theme}>
             <CSSReset />
 
             <Stack isInline>
-                <FiltersBar
-                    defaultAge={filters.age}
-                    defaultInitialCapital={filters.initialCapital}
-                    defaultAvgYearlyReturns={filters.avgYearlyReturns}
-                    defaultTriType={filters.triType}
-                    defaultTriValue={filters.triValue}
-                    defaultIncomes={filters.incomes}
-                    defaultExpenses={filters.expenses}
-                    onChange={onFiltersChange}
-                />
+                <FiltersBar defaultValues={filters} onChange={onFiltersChange} />
 
                 <Stack flex="1">
                     <SimpleTable className="the-table">

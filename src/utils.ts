@@ -14,8 +14,8 @@ export const getDefaultSettings = (): FiltersValues => {
         age: 31,
         initialCapital: 5000,
         avgYearlyReturns: 6,
-        triType: "percentage",
-        triValue: 4,
+        withdrawalRate: 4,
+        retirementIncomeTarget: 40000,
         incomes: [
             {
                 name: "Bonus thingie",

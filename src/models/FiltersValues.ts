@@ -5,8 +5,8 @@ export interface FiltersValues {
     age?: number;
     initialCapital: number;
     avgYearlyReturns: number;
-    triType: string;
-    triValue: number;
+    withdrawalRate: number;
+    retirementIncomeTarget: number;
     incomes: CashFlow[];
     expenses: CashFlow[];
 }

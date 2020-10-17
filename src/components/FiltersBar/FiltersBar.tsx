@@ -27,26 +27,21 @@ import { SafeWithdrawalType } from "values";
 import { CashFlow, FiltersValues } from "models";
 
 interface FiltersBarProps {
-    defaultYear?: number;
-    defaultAge?: number;
-    defaultInitialCapital?: number;
-    defaultAvgYearlyReturns?: number;
-    defaultTriType?: string;
-    defaultTriValue?: number;
-    defaultIncomes?: CashFlow[];
-    defaultExpenses?: CashFlow[];
+    defaultValues?: FiltersValues;
     onChange: (filters: FiltersValues) => void;
 }
 
 export const FiltersBar: React.FC<FiltersBarProps> = ({
-    defaultYear = new Date().getFullYear(),
-    defaultAge,
-    defaultInitialCapital = 0,
-    defaultAvgYearlyReturns = 6,
-    defaultTriType = SafeWithdrawalType.Percentage,
-    defaultTriValue = 4,
-    defaultIncomes = [],
-    defaultExpenses = [],
+    defaultValues = {
+        startingYear: new Date().getFullYear(),
+        age: undefined,
+        initialCapital: 0,
+        avgYearlyReturns: 0,
+        withdrawalRate: 4,
+        retirementIncomeTarget: 40000,
+        incomes: [],
+        expenses: [],
+    },
     onChange,
 }) => {
     const { isOpen, onOpen, onClose } = useDisclosure();
@@ -54,16 +49,16 @@ export const FiltersBar: React.FC<FiltersBarProps> = ({
     const [activeCashFlow, setActiveCashFlow] = useState<CashFlow | undefined>();
 
     // Misc
-    const [startingYear, setStartingYear] = useState<number>(defaultYear);
-    const [age, setAge] = useState<number | undefined>(defaultAge);
-    const [initialCapital, setInitialCapital] = useState<number>(defaultInitialCapital);
-    const [avgYearlyReturns, setAvgYearlyReturns] = useState<number>(defaultAvgYearlyReturns);
-    const [triType, setTriType] = useState<string>(defaultTriType);
-    const [triValue, setTriValue] = useState<number>(defaultTriValue);
+    const [startingYear, setStartingYear] = useState<number>(defaultValues.startingYear);
+    const [age, setAge] = useState<number | undefined>(defaultValues.age);
+    const [initialCapital, setInitialCapital] = useState<number>(defaultValues.initialCapital);
+    const [avgYearlyReturns, setAvgYearlyReturns] = useState<number>(defaultValues.avgYearlyReturns);
+    const [retirementIncomeTarget, setRetirementIncomeTarget] = useState<number>(defaultValues.retirementIncomeTarget);
+    const [withdrawalRate, setWithdrawalRate] = useState<number>(defaultValues.withdrawalRate);
 
     // Incomes
     const [incomes, setIncomes] = useState<CashFlow[]>(() =>
-        defaultIncomes.map((income) => {
+        defaultValues.incomes.map((income) => {
             if (!income.id) {
                 income.id = uuidv4();
             }
@@ -73,7 +68,7 @@ export const FiltersBar: React.FC<FiltersBarProps> = ({
 
     // Expenses
     const [expenses, setExpenses] = useState<CashFlow[]>(() =>
-        defaultExpenses.map((expense) => {
+        defaultValues.expenses.map((expense) => {
             if (!expense.id) {
                 expense.id = uuidv4();
             }
@@ -88,13 +83,12 @@ export const FiltersBar: React.FC<FiltersBarProps> = ({
             const index = target.findIndex((item) => item.id === cashFlow.id);
             if (index > -1) {
                 const newCashFlows = [...target];
-                newCashFlows[index] = cashFlow;
+                newCashFlows[index] = { ...cashFlow };
                 return newCashFlows;
             }
         } else {
             // Create
-            cashFlow.id = uuidv4();
-            return [...target, cashFlow];
+            return [...target, { ...cashFlow, id: uuidv4() }];
         }
         return target;
     };
@@ -156,18 +150,27 @@ export const FiltersBar: React.FC<FiltersBarProps> = ({
     };
 
     useEffect(() => {
-        // TODO: bundle all the misc into an object
         onChange({
             startingYear,
             age,
             initialCapital,
             avgYearlyReturns,
-            triType,
-            triValue,
+            withdrawalRate,
+            retirementIncomeTarget,
             incomes,
             expenses,
         });
-    }, [startingYear, age, initialCapital, avgYearlyReturns, triType, triValue, incomes, expenses]);
+    }, [
+        startingYear,
+        age,
+        initialCapital,
+        avgYearlyReturns,
+        withdrawalRate,
+        retirementIncomeTarget,
+        incomes,
+        expenses,
+        onChange,
+    ]);
 
     return (
         <Stack backgroundColor="white" flexBasis="450px">
@@ -182,12 +185,13 @@ export const FiltersBar: React.FC<FiltersBarProps> = ({
             </Modal>
 
             <Stack spacing={0}>
-                <FilterSection title="Misc" padding="20px">
+                <FilterSection title="Misc" padding="15px">
                     <Stack isInline>
                         <FormControl flexBasis="50%">
                             <FormLabel htmlFor="startingYear">Starting Year</FormLabel>
 
                             <NumberInput
+                                size="sm"
                                 min={1900}
                                 max={3000}
                                 defaultValue={startingYear}
@@ -205,6 +209,7 @@ export const FiltersBar: React.FC<FiltersBarProps> = ({
                             <FormLabel htmlFor="age">Age</FormLabel>
 
                             <NumberInput
+                                size="sm"
                                 precision={0}
                                 defaultValue={age}
                                 onChange={(value: React.ReactText) => setAge(value as number)}
@@ -223,6 +228,7 @@ export const FiltersBar: React.FC<FiltersBarProps> = ({
                             <FormLabel htmlFor="initialCapital">Initial Capital ($)</FormLabel>
 
                             <NumberInput
+                                size="sm"
                                 step={1000}
                                 precision={0}
                                 defaultValue={initialCapital}
@@ -238,7 +244,7 @@ export const FiltersBar: React.FC<FiltersBarProps> = ({
 
                         <FormControl flexBasis="50%">
                             <FormLabel htmlFor="avgYearlyReturns">Avg Yearly Returns</FormLabel>
-                            <InputGroup>
+                            <InputGroup size="sm">
                                 <Input
                                     type="number"
                                     id="avgYearlyReturns"
@@ -252,50 +258,44 @@ export const FiltersBar: React.FC<FiltersBarProps> = ({
                         </FormControl>
                     </Stack>
 
-                    <FormControl marginTop="15px">
-                        <FormLabel htmlFor="targetRetirementIncome">Minimum Retirement Withdrawal</FormLabel>
-                        <Stack isInline>
-                            <Select
-                                value={triType}
-                                onChange={(e) => setTriType(e.currentTarget.value)}
-                                flexBasis="50%"
+                    <Stack isInline>
+                        <FormControl flexBasis="50%">
+                            <FormLabel htmlFor="withdrawalRate">Withdrawal Rate (%)</FormLabel>
+
+                            <NumberInput
+                                min={0}
+                                step={0.1}
+                                defaultValue={withdrawalRate}
+                                onChange={(value: React.ReactText) => setWithdrawalRate(value as number)}
+                                size="sm"
                             >
-                                <option value={SafeWithdrawalType.Percentage}>Percentage</option>
-                                <option value={SafeWithdrawalType.Fixed}>Fixed</option>
-                            </Select>
+                                <NumberInputField id="withdrawalRate" />
+                                <NumberInputStepper>
+                                    <NumberIncrementStepper />
+                                    <NumberDecrementStepper />
+                                </NumberInputStepper>
+                            </NumberInput>
+                        </FormControl>
 
-                            <InputGroup flexBasis="50%">
-                                <Input
-                                    type="number"
-                                    id="triValue"
-                                    value={triValue}
-                                    onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                                        setTriValue(parseInt(e.currentTarget.value))
-                                    }
-                                    isInvalid={
-                                        triType === SafeWithdrawalType.Percentage
-                                            ? triValue > 100 || triValue <= 0
-                                            : false
-                                    }
-                                />
-                                <InputRightElement
-                                    children={triType === SafeWithdrawalType.Percentage ? "%" : "$"}
-                                    color="gray.300"
-                                />
-                            </InputGroup>
-                        </Stack>
-                    </FormControl>
-
-                    <FormControl flexBasis="50%">
-                        <FormLabel htmlFor="targetRetirementIncome">Target Retirement Income ($)</FormLabel>
-                        <NumberInput min={0} step={5000} defaultValue={40000} onChange={console.log}>
-                            <NumberInputField id="targetRetirementIncome" />
-                            <NumberInputStepper>
-                                <NumberIncrementStepper />
-                                <NumberDecrementStepper />
-                            </NumberInputStepper>
-                        </NumberInput>
-                    </FormControl>
+                        <FormControl flexBasis="50%">
+                            <FormLabel htmlFor="retirementIncomeTarget">
+                                Retirement Income Target ($)
+                            </FormLabel>
+                            <NumberInput
+                                min={0}
+                                step={5000}
+                                defaultValue={retirementIncomeTarget}
+                                onChange={(value: React.ReactText) => setRetirementIncomeTarget(value as number)}
+                                size="sm"
+                            >
+                                <NumberInputField id="retirementIncomeTarget" />
+                                <NumberInputStepper>
+                                    <NumberIncrementStepper />
+                                    <NumberDecrementStepper />
+                                </NumberInputStepper>
+                            </NumberInput>
+                        </FormControl>
+                    </Stack>
                 </FilterSection>
 
                 <FilterSection title="Incomes">

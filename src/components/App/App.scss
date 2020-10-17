@@ -1,11 +1,18 @@
 body {
-    background-color: #f5f5f5;
+    background-color: white;
 }
 
 .the-table {
+    border-left: 5px solid #333;
+    border-right: 5px solid #333;
+    
     tr {
         &.ready {
-            background-color: green;
+            background-color: #c7f7c7;
+
+            &:nth-of-type(even) {
+                background: #a3efa3;
+            }
         }
     }
 
