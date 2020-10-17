@@ -1,11 +1,12 @@
 .simple-table {
     thead {
-        background: #333439;
+        background: #3e424e;
 
         th {
             font-weight: 500;
             color: white;
             padding: 10px 8px;
+            font-size: 14px;
         }
     }
 
@@ -17,16 +18,12 @@
 
             td {
                 padding: 6px 8px;
+                font-size: 12px;
             }
         }
     }
 
     th, td {
-        font-size: 14px;
-        text-align: center;
-
-        &.spacer {
-            width: 15px;
-        }
+        text-align: left;
     }
 }

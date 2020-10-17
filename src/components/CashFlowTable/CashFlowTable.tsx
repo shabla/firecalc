@@ -33,19 +33,16 @@ export const CashFlowTable: React.FC<CashFlowTableProps> = ({
         <SimpleTable>
             <thead>
                 <tr>
-                    <th className="spacer"></th>
                     <th>Name</th>
                     <th>Amount</th>
                     <th>Frequency</th>
                     <th></th>
-                    <th className="spacer"></th>
                 </tr>
             </thead>
             <tbody>
                 {items.map((cashFlow) => {
                     return (
                         <tr key={cashFlow.id}>
-                            <td className="spacer"></td>
                             <td>{cashFlow.name}</td>
                             <td>
                                 <Currency quantity={cashFlow.amount} currency="CAD" pattern="###,### !" />
@@ -67,7 +64,6 @@ export const CashFlowTable: React.FC<CashFlowTableProps> = ({
                                     />
                                 </Stack>
                             </td>
-                            <td className="spacer"></td>
                         </tr>
                     );
                 })}

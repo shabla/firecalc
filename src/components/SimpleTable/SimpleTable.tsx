@@ -13,5 +13,3 @@ export const SimpleTable: React.FC<SimpleTableProps> = ({ children, className = 
         </table>
     );
 };
-
-export default SimpleTable;

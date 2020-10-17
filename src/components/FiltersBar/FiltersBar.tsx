@@ -19,14 +19,14 @@ import {
     useDisclosure,
 } from "@chakra-ui/core";
 
-import { EditCashFlowDialog } from "./EditCashFlowDialog/EditCashFlowDialog";
+import { EditCashFlowDialog } from "../EditCashFlowDialog/EditCashFlowDialog";
 import { FilterSection } from "./FilterSection";
 import { removeFromList } from "utils";
 import { CashFlowTable } from "components";
 import { SafeWithdrawalType } from "values";
 import { CashFlow, FiltersValues } from "models";
 
-interface FiltersProps {
+interface FiltersBarProps {
     defaultYear?: number;
     defaultAge?: number;
     defaultInitialCapital?: number;
@@ -38,7 +38,7 @@ interface FiltersProps {
     onChange: (filters: FiltersValues) => void;
 }
 
-const Filters: React.FC<FiltersProps> = ({
+export const FiltersBar: React.FC<FiltersBarProps> = ({
     defaultYear = new Date().getFullYear(),
     defaultAge,
     defaultInitialCapital = 0,
@@ -82,7 +82,7 @@ const Filters: React.FC<FiltersProps> = ({
     );
 
     const updateCashFlow = (target: CashFlow[], cashFlow: CashFlow): CashFlow[] => {
-        console.log("find ", cashFlow, "in", target)
+        console.log("find ", cashFlow, "in", target);
         if (cashFlow.id) {
             // Update
             const index = target.findIndex((item) => item.id === cashFlow.id);
@@ -170,9 +170,19 @@ const Filters: React.FC<FiltersProps> = ({
     }, [startingYear, age, initialCapital, avgYearlyReturns, triType, triValue, incomes, expenses]);
 
     return (
-        <>
-            <Stack isInline spacing={0}>
-                <FilterSection title="Misc" paddingX="30px" paddingBottom="30px" flexBasis={`${100 / 3}%`}>
+        <Stack backgroundColor="white" flexBasis="450px">
+            <Modal isOpen={isOpen} closeOnOverlayClick={false} onClose={onClose}>
+                <ModalOverlay />
+                <EditCashFlowDialog
+                    title={dialogTitle}
+                    cashFlow={activeCashFlow}
+                    onCancel={onClose}
+                    onSave={handleDialogSave}
+                />
+            </Modal>
+
+            <Stack spacing={0}>
+                <FilterSection title="Misc" padding="20px">
                     <Stack isInline>
                         <FormControl flexBasis="50%">
                             <FormLabel htmlFor="startingYear">Starting Year</FormLabel>
@@ -288,8 +298,8 @@ const Filters: React.FC<FiltersProps> = ({
                     </FormControl>
                 </FilterSection>
 
-                <FilterSection title="Incomes" bg="#F8F9FC" paddingX={0} flexBasis={`${100 / 3}%`}>
-                    <Stack flex="1" justifyContent="space-between">
+                <FilterSection title="Incomes">
+                    <Stack>
                         <CashFlowTable
                             items={incomes}
                             onEdit={handleEditIncome}
@@ -302,8 +312,8 @@ const Filters: React.FC<FiltersProps> = ({
                     </Stack>
                 </FilterSection>
 
-                <FilterSection title="Expenses" paddingX={0} flexBasis={`${100 / 3}%`}>
-                    <Stack flex="1" justifyContent="space-between">
+                <FilterSection title="Expenses">
+                    <Stack>
                         <CashFlowTable
                             items={expenses}
                             onEdit={handleEditExpense}
@@ -316,18 +326,6 @@ const Filters: React.FC<FiltersProps> = ({
                     </Stack>
                 </FilterSection>
             </Stack>
-
-            <Modal isOpen={isOpen} closeOnOverlayClick={false} onClose={onClose}>
-                <ModalOverlay />
-                <EditCashFlowDialog
-                    title={dialogTitle}
-                    cashFlow={activeCashFlow}
-                    onCancel={onClose}
-                    onSave={handleDialogSave}
-                />
-            </Modal>
-        </>
+        </Stack>
     );
 };
-
-export default Filters;

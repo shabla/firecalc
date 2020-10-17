@@ -7,12 +7,17 @@ interface FilterSectionProps extends StackProps {
 
 export const FilterSection: React.FC<FilterSectionProps> = ({ title, bg = "white", children, ...rest }) => {
     return (
-        <Stack flex="1" bg={bg} paddingTop="10px" {...rest}>
-            <Heading size="lg" textAlign="center" marginBottom="10px">
-                {title}
-            </Heading>
-            {children}
-        </Stack>
+        <>
+            <Stack>
+                <Heading size="lg" textAlign="center" bg="#2b2e35" color="white" padding="10px">
+                    {title}
+                </Heading>
+            </Stack>
+
+            <Stack bg={bg} {...rest}>
+                {children}
+            </Stack>
+        </>
     );
 };
 
