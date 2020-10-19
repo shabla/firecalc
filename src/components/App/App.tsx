@@ -4,7 +4,7 @@ import { ThemeProvider, Stack, theme, CSSReset } from "@chakra-ui/core";
 
 import { SimpleTable, FiltersBar } from "components";
 import { FiltersValues, CashFlow } from "models";
-import { RecurrenceType, FrequencyScope } from "values";
+import { RecurrenceType, RecurrenceUntilType, FrequencyScope } from "values";
 import { getDefaultSettings, saveToLocalStorage } from "utils";
 
 import "./App.scss";
@@ -19,7 +19,7 @@ type RowItem = {
     returns: number;
     totalCapital: number;
     retirementWithdrawal: number;
-    ready: boolean;
+    goalReached: boolean;
 };
 
 type ColumnDefinition = {
@@ -114,15 +114,19 @@ export const App = () => {
     const [rows, setRows] = useState<RowItem[]>([]);
     const [filters, setFilters] = useState<FiltersValues>(getDefaultSettings());
 
-    const calculateCashFlow = (year: number, cashFlows: CashFlow[]): number => {
+    const calculateCashFlow = (year: number, cashFlows: CashFlow[], goalReached: boolean): number => {
         let total = 0;
+
         cashFlows.forEach((cashFlow) => {
-            if (cashFlow.recurrenceType === RecurrenceType.Once) {
-                if (year === cashFlow.year) {
-                    total += cashFlow.amount;
-                }
+            if (cashFlow.recurrenceType === RecurrenceType.Once && year === cashFlow.year) {
+                total += cashFlow.amount;
             } else if (cashFlow.recurrenceType === RecurrenceType.Recurring) {
-                if (year >= cashFlow.year) {
+                const started = year >= cashFlow.year;
+                const expired =
+                    (cashFlow.untilType === RecurrenceUntilType.Year && year > cashFlow.untilYear!) ||
+                    (cashFlow.untilType === RecurrenceUntilType.Goal && goalReached);
+
+                if (started && !expired) {
                     const freq = cashFlow.frequency as number;
                     // calc the total for the year
                     switch (cashFlow.frequencyScope) {
@@ -142,11 +146,14 @@ export const App = () => {
                 }
             }
         });
+
         return total;
     };
 
     const onFiltersChange = useCallback((filters: FiltersValues) => {
         const rows: RowItem[] = [];
+
+        console.log(filters);
 
         for (let i = 0; i < ROWS_TO_SHOW; i++) {
             // Year
@@ -168,13 +175,13 @@ export const App = () => {
 
             // Potential Withdrawal Rate at start of year
             const retirementWithdrawal = startOfYearCapital * (filters.withdrawalRate / 100);
-            const ready = retirementWithdrawal >= filters.retirementIncomeTarget;
+            const goalReached = retirementWithdrawal >= filters.retirementIncomeTarget;
 
             // Income for this year
-            let income = calculateCashFlow(year, filters.incomes);
+            let income = calculateCashFlow(year, filters.incomes, goalReached);
 
             // Expenses for this year
-            const expenses = calculateCashFlow(year, filters.expenses);
+            const expenses = calculateCashFlow(year, filters.expenses, goalReached);
 
             // Savings
             const savings = income - expenses;
@@ -195,7 +202,7 @@ export const App = () => {
                 returns,
                 totalCapital: endOfYearTotalCapital,
                 retirementWithdrawal,
-                ready,
+                goalReached,
             };
 
             rows.push(row);
@@ -242,7 +249,7 @@ export const App = () => {
                         <tbody>
                             {rows.map((row) => {
                                 return (
-                                    <tr key={row.year} className={row.ready ? "ready" : undefined}>
+                                    <tr key={row.year} className={row.goalReached ? "ready" : undefined}>
                                         {columns.map((col) => {
                                             if (col.condition && !col.condition(filters)) {
                                                 return null;

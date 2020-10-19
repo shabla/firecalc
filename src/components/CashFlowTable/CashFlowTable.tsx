@@ -4,7 +4,7 @@ import { IconButton, Stack } from "@chakra-ui/core";
 
 import { CashFlow } from "models";
 import { SimpleTable } from "components";
-import { RecurrenceType } from "values";
+import { RecurrenceType, RecurrenceUntilType } from "values";
 
 export interface CashFlowTableProps {
     items: CashFlow[];
@@ -24,7 +24,15 @@ export const CashFlowTable: React.FC<CashFlowTableProps> = ({
             const freq = cashFlow.frequency && cashFlow.frequency > 1 ? `${cashFlow.frequency} ` : "";
             const freqScope =
                 cashFlow.frequencyScope + (cashFlow.frequency && cashFlow.frequency > 1 ? "s" : "");
-            return `Every ${freq}${freqScope} starting in ${cashFlow.year}`;
+
+            let until = "";
+            if (cashFlow.untilType === RecurrenceUntilType.Goal) {
+                until = " until goal reached";
+            } else if (cashFlow.untilType === RecurrenceUntilType.Year) {
+                until = ` until ${cashFlow.untilYear}`;
+            }
+
+            return `Every ${freq}${freqScope} starting in ${cashFlow.year}${until}`;
         }
         return "";
     };

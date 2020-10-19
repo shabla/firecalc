@@ -1,6 +1,5 @@
 # TODO
 
-- Add "until/to" field for recurring cash flow (ex: get 1000 per week from 2035 to 2045)
-- Add checkbox to determine if the cash flow will continue in retirement or not (ex: stop working when you're ready)
 - delete confirmation (like insomnia)
 - display action button on hover? or in a submenu?
+- Add option in recurring type for source to start at a specific age (ex. OAS, pension, etc)

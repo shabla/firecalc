@@ -8,4 +8,6 @@ export interface CashFlow {
     // only for RecurrenceType.Recurring
     frequency?: number,
     frequencyScope?: string,
+    untilType?: string,
+    untilYear?: number,
 }
