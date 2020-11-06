@@ -5,6 +5,7 @@
 		}
     ],
     "settings": {
+        "editor.rulers": [120],
         "editor.tabSize": 4,
         "prettier.singleQuote": false,
         "prettier.tabWidth": 4,

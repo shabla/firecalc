@@ -10,4 +10,6 @@ export interface CashFlow {
     frequencyScope?: string,
     untilType?: string,
     untilYear?: number,
+    startingType?: string;
+    startingValue?: number;
 }

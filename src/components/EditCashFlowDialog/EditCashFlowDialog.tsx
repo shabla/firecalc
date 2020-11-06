@@ -18,7 +18,7 @@ import {
     ModalCloseButton,
 } from "@chakra-ui/core";
 
-import { RecurrenceType, RecurrenceUntilType, FrequencyScope } from "values";
+import { RecurrenceType, RecurrenceUntilType, RecurrenceStartingType, FrequencyScope } from "values";
 import { CashFlow } from "models";
 
 import "./EditCashFlowDialog.scss";
@@ -30,6 +30,16 @@ interface EditCashFlowDialogProps {
     onSave: (cashFlow: CashFlow) => void;
 }
 
+const getDefaultStartingTypeValue = (type: RecurrenceStartingType): string => {
+    switch(type) {
+        case RecurrenceStartingType.Now: return "";
+        case RecurrenceStartingType.Goal: return "";
+        case RecurrenceStartingType.Age: return "";
+        case RecurrenceStartingType.Year: return `${new Date().getFullYear()}`;
+        default: return "";
+    }
+}
+
 export const EditCashFlowDialog: React.FC<EditCashFlowDialogProps> = ({ title, cashFlow, onCancel, onSave }) => {
     const [name, setName] = useState<string>(cashFlow?.name || "");
     const [amount, setAmount] = useState<string>(cashFlow?.amount != null ? `${cashFlow?.amount}` : "");
@@ -39,6 +49,14 @@ export const EditCashFlowDialog: React.FC<EditCashFlowDialogProps> = ({ title, c
     const [frequencyScope, setFrequencyScope] = useState<string>(cashFlow?.frequencyScope || FrequencyScope.Year);
     const [untilType, setUntilType] = useState<string>(cashFlow?.untilType || RecurrenceUntilType.Forever);
     const [untilYear, setUntilYear] = useState<string>(`${cashFlow?.untilYear || new Date().getFullYear()}`);
+    const [startingType, setStartingType] = useState<string>(cashFlow?.startingType || RecurrenceStartingType.Now);
+    const [startingValue, setStartingValue] = useState<string>(() => {
+        if(cashFlow?.startingValue) {
+            return `${cashFlow?.startingValue}`;
+        }
+        
+        return getDefaultStartingTypeValue(startingType as RecurrenceStartingType);
+    });
 
     const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => setName(e.currentTarget.value);
     const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => setAmount(e.currentTarget.value);
@@ -48,7 +66,14 @@ export const EditCashFlowDialog: React.FC<EditCashFlowDialogProps> = ({ title, c
     const handleFrequencyChange = (e: React.ChangeEvent<HTMLInputElement>) => setFrequency(e.currentTarget.value);
     const handleUntilTypeChange = (e: React.ChangeEvent<HTMLInputElement>) => setUntilType(e.currentTarget.value);
     const handleFrequencyScopeChange = (e: React.ChangeEvent<HTMLSelectElement>) =>
-        setFrequencyScope(e.currentTarget.value);
+    setFrequencyScope(e.currentTarget.value);
+    const handleStartingTypeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const newType = e.currentTarget.value;
+        const value = getDefaultStartingTypeValue(newType as RecurrenceStartingType);
+        setStartingValue(value);
+        setStartingType(newType);
+    };
+    const handleStartingValueChange = (e: React.ChangeEvent<HTMLInputElement>) => setStartingValue(e.currentTarget.value);
 
     const handleSave = () => {
         const hasName = name !== "";
@@ -79,6 +104,8 @@ export const EditCashFlowDialog: React.FC<EditCashFlowDialogProps> = ({ title, c
             frequencyScope: isRecurring ? frequencyScope : undefined,
             untilType: isRecurring ? untilType : undefined,
             untilYear: isRecurring && isUntilYear ? parseInt(untilYear) : undefined,
+            startingType: isRecurring ? startingType : undefined,
+            startingValue: isRecurring ? parseInt(startingValue) : undefined
         });
     };
 
@@ -90,13 +117,15 @@ export const EditCashFlowDialog: React.FC<EditCashFlowDialogProps> = ({ title, c
     const isRecurring = recurrenceType === RecurrenceType.Recurring;
 
     return (
-        <ModalContent>
+        <ModalContent minWidth="550px">
             <ModalHeader>
                 <Heading size="lg" textAlign="center">
                     {title}
                 </Heading>
             </ModalHeader>
+
             <ModalCloseButton />
+
             <ModalBody>
                 <FormControl isRequired>
                     <Stack isInline alignItems="center">
@@ -135,11 +164,11 @@ export const EditCashFlowDialog: React.FC<EditCashFlowDialogProps> = ({ title, c
                         </Text>
 
                         <Input
-                            type="string"
+                            type="number"
                             value={year}
-                            flexBasis="auto"
                             isDisabled={isRecurring}
                             onChange={handleYearChange}
+                            flexBasis="auto"
                         />
                     </Stack>
 
@@ -156,8 +185,8 @@ export const EditCashFlowDialog: React.FC<EditCashFlowDialogProps> = ({ title, c
                         </Radio>
 
                         <Stack>
-                            <Stack isInline>
-                                <Text alignSelf="center" flex="0 0 70px" color={!isRecurring ? "gray.300" : undefined}>
+                            <Stack isInline marginBottom="1em">
+                                <Text alignSelf="center" flex="0 0 80px" color={!isRecurring ? "gray.300" : undefined}>
                                     every
                                 </Text>
 
@@ -190,21 +219,78 @@ export const EditCashFlowDialog: React.FC<EditCashFlowDialogProps> = ({ title, c
                                 </Select>
                             </Stack>
 
-                            <Stack isInline>
-                                <Text alignSelf="center" flex="0 0 70px" color={!isRecurring ? "gray.300" : undefined}>
+                            <Stack isInline marginY="1em" paddingY="1em" borderY="1px solid #efefef">
+                                <Text alignSelf="center" flex="0 0 80px" color={!isRecurring ? "gray.300" : undefined}>
                                     starting
                                 </Text>
 
-                                <Input
-                                    type="number"
-                                    value={year}
-                                    onChange={handleYearChange}
-                                    isDisabled={!isRecurring}
-                                />
+                                <Stack>
+                                    <Radio
+                                        isChecked={startingType === RecurrenceStartingType.Now}
+                                        value={RecurrenceStartingType.Now}
+                                        onChange={handleStartingTypeChange}
+                                        isDisabled={!isRecurring}
+                                    >
+                                        now
+                                    </Radio>
+
+                                    <Radio
+                                        isChecked={startingType === RecurrenceStartingType.Goal}
+                                        value={RecurrenceStartingType.Goal}
+                                        onChange={handleStartingTypeChange}
+                                        isDisabled={!isRecurring}
+                                    >
+                                        when goal reached
+                                    </Radio>
+
+                                    <Stack isInline>
+                                        <Radio
+                                            isChecked={startingType === RecurrenceStartingType.Age}
+                                            value={RecurrenceStartingType.Age}
+                                            onChange={handleStartingTypeChange}
+                                            isDisabled={!isRecurring}
+                                            flexShrink={0}
+                                            flexBasis="35%"
+                                        >
+                                            at age
+                                        </Radio>
+
+                                        <Input
+                                            type="number"
+                                            size="sm"
+                                            flexBasis="65%"
+                                            value={startingType === RecurrenceStartingType.Age ? startingValue : ""}
+                                            onChange={handleStartingValueChange}
+                                            isDisabled={!isRecurring || startingType !== RecurrenceStartingType.Age}
+                                        />
+                                    </Stack>
+
+                                    <Stack isInline>
+                                        <Radio
+                                            isChecked={startingType === RecurrenceStartingType.Year}
+                                            value={RecurrenceStartingType.Year}
+                                            onChange={handleStartingTypeChange}
+                                            isDisabled={!isRecurring}
+                                            flexShrink={0}
+                                            flexBasis="35%"
+                                        >
+                                            year
+                                        </Radio>
+
+                                        <Input
+                                            type="number"
+                                            size="sm"
+                                            flexBasis="65%"
+                                            value={startingType === RecurrenceStartingType.Year ? startingValue : ""}
+                                            onChange={handleStartingValueChange}
+                                            isDisabled={!isRecurring || startingType !== RecurrenceStartingType.Year}
+                                        />
+                                    </Stack>
+                                </Stack>
                             </Stack>
 
-                            <Stack isInline>
-                                <Text alignSelf="center" flex="0 0 70px" color={!isRecurring ? "gray.300" : undefined}>
+                            <Stack isInline marginTop="1em">
+                                <Text alignSelf="center" flex="0 0 80px" color={!isRecurring ? "gray.300" : undefined}>
                                     until
                                 </Text>
 
@@ -233,6 +319,8 @@ export const EditCashFlowDialog: React.FC<EditCashFlowDialogProps> = ({ title, c
                                             value={RecurrenceUntilType.Year}
                                             onChange={handleUntilTypeChange}
                                             isDisabled={!isRecurring}
+                                            flexShrink={0}
+                                            flexBasis="35%"
                                         >
                                             year
                                         </Radio>
@@ -240,6 +328,7 @@ export const EditCashFlowDialog: React.FC<EditCashFlowDialogProps> = ({ title, c
                                         <Input
                                             type="number"
                                             size="sm"
+                                            flexBasis="65%"
                                             value={untilYear}
                                             onChange={handleUntilYearChange}
                                             isDisabled={!isRecurring || untilType !== RecurrenceUntilType.Year}
