@@ -1,4 +1,4 @@
-import { FiltersValues } from "models/FiltersValues";
+import { FiltersValues, CashFlow } from "models";
 
 export const removeFromList = <T>(list: T[], item: T): T[] => {
     const index = list.indexOf(item);
@@ -22,22 +22,27 @@ export const getFromLocalStorage = (name: string): unknown => {
     }
 };
 
+const getDefaultStartingYear = (val?: number): number => val != null ? val : new Date().getFullYear();
+const getDefaultAge = (val?: number): number | undefined => val;
+const getDefaultInitialCapital = (val?: number): number => val != null ? val : 0;
+const getDefaultAvgYearlyReturns = (val?: number): number => val != null ? val : 6;
+const getDefaultWithdrawalRate = (val?: number): number => val != null ? val : 4;
+const getDefaultRetirementIncomeTarget = (val?: number): number => val != null ? val : 40000;
+const getDefaultIncomes = (val?: CashFlow[]): CashFlow[] => val || [];
+const getDefaultSpendings = (val?: CashFlow[]): CashFlow[] => val || [];
+
 export const getDefaultSettings = (): FiltersValues => {
     const filters = getFromLocalStorage("filters") as FiltersValues;
 
-    if (filters) {
-        return filters;
-    }
-
     return {
-        startingYear: new Date().getFullYear(),
-        age: undefined,
-        initialCapital: 0,
-        avgYearlyReturns: 6,
-        withdrawalRate: 4,
-        retirementIncomeTarget: 40000,
-        incomes: [],
-        expenses: [],
+        startingYear: getDefaultStartingYear(filters.startingYear),
+        age: getDefaultAge(filters.age),
+        initialCapital: getDefaultInitialCapital(filters.initialCapital),
+        avgYearlyReturns: getDefaultAvgYearlyReturns(filters.avgYearlyReturns),
+        withdrawalRate: getDefaultWithdrawalRate(filters.withdrawalRate),
+        retirementIncomeTarget: getDefaultRetirementIncomeTarget(filters.retirementIncomeTarget),
+        incomes: getDefaultIncomes(filters.incomes),
+        spendings: getDefaultSpendings(filters.spendings),
     };
 
     // return {
@@ -65,7 +70,7 @@ export const getDefaultSettings = (): FiltersValues => {
     //             id: "7z6139e3-be1b-4410-a137-047b64f1849c",
     //         },
     //     ],
-    //     expenses: [
+    //     spendings: [
     //         {
     //             name: "everything",
     //             amount: 30000,
