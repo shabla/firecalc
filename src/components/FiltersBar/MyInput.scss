@@ -1,0 +1,67 @@
+.my-input {
+    $input-height: 45px;
+    $paddingX: 20px;
+
+    height: $input-height;
+    position: relative;
+
+    > button {
+        border: 0;
+        background: transparent;
+        position: absolute;
+        top: 0;
+        right: 0;
+        height: $input-height;
+        width: $input-height;
+        z-index: 1100;
+        display: none;
+        color: rgba(50, 50, 50, 0.1);
+
+        &:hover {
+            cursor: pointer;
+        }
+
+        &:active {
+            background: rgba(50, 50, 50, 0.01);
+        }
+
+        &:focus {
+            outline: 0;
+        }
+    }
+
+    &:hover {
+        & > button {
+            display: block;
+        }
+    }
+
+    > label {
+        position: absolute;
+        top: 0;
+        left: 5px;
+        pointer-events: none;
+        color: rgba(50, 50, 50, 0.8);
+        z-index: 900;
+        font-size: 12px;
+        line-height: 20px;
+    }
+
+    > input {
+        display: block;
+        position: relative;
+        z-index: 1000;
+        width: 100%;
+        background: transparent;
+        border: 0;
+        height: $input-height;
+        line-height: $input-height;
+        padding: 0 $paddingX;
+        padding-top: 15px;
+        
+        &:focus {
+            background: rgba(50, 50, 50, 0.01);
+            outline: 0;
+        }
+    }
+}

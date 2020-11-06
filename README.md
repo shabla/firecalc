@@ -2,7 +2,6 @@
 
 - BUG:  first years are bugged with expenses
 - BUG:  validation amount
-- TASK: expenses to spendings
 - FEAT: delete confirmation (like insomnia)
 - FEAT: delete all with confirmation
 - UX:   display action button on hover? or in a submenu?

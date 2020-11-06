@@ -14,6 +14,7 @@ import {
     Input,
     Stack,
     Modal,
+    Icon,
     ModalOverlay,
     useDisclosure,
 } from "@chakra-ui/core";
@@ -24,10 +25,34 @@ import { removeFromList } from "utils";
 import { CashFlowTable } from "components";
 import { CashFlow, FiltersValues } from "models";
 
+import "./MyInput.scss";
+
 interface FiltersBarProps {
     defaultValues?: FiltersValues;
     onChange: (filters: FiltersValues) => void;
 }
+
+interface MyInputProps {
+    label?: string;
+}
+
+const MyInput: React.FC<MyInputProps> = ({ label }) => {
+    const [value, setValue] = useState<string>("");
+
+    return (
+        <div className="my-input">
+            <button onClick={() => setValue("")}>
+                <Icon name="small-close" />
+            </button>
+            <input
+                type="text"
+                value={value}
+                onChange={(e) => setValue(e.currentTarget.value)}
+            />
+            {label && <label>{label}</label>}
+        </div>
+    );
+};
 
 export const FiltersBar: React.FC<FiltersBarProps> = ({
     defaultValues = {
@@ -38,23 +63,33 @@ export const FiltersBar: React.FC<FiltersBarProps> = ({
         withdrawalRate: 4,
         retirementIncomeTarget: 40000,
         incomes: [],
-        expenses: [],
+        spendings: [],
     },
     onChange,
 }) => {
     const { isOpen, onOpen, onClose } = useDisclosure();
     const [dialogTitle, setDialogTitle] = useState<string>("");
-    const [activeCashFlow, setActiveCashFlow] = useState<CashFlow | undefined>();
+    const [activeCashFlow, setActiveCashFlow] = useState<
+        CashFlow | undefined
+    >();
 
     // Misc
-    const [startingYear, setStartingYear] = useState<number>(defaultValues.startingYear);
-    const [age, setAge] = useState<number | undefined>(defaultValues.age);
-    const [initialCapital, setInitialCapital] = useState<number>(defaultValues.initialCapital);
-    const [avgYearlyReturns, setAvgYearlyReturns] = useState<number>(defaultValues.avgYearlyReturns);
-    const [retirementIncomeTarget, setRetirementIncomeTarget] = useState<number>(
-        defaultValues.retirementIncomeTarget
+    const [startingYear, setStartingYear] = useState<number>(
+        defaultValues.startingYear
     );
-    const [withdrawalRate, setWithdrawalRate] = useState<number>(defaultValues.withdrawalRate);
+    const [age, setAge] = useState<number | undefined>(defaultValues.age);
+    const [initialCapital, setInitialCapital] = useState<number>(
+        defaultValues.initialCapital
+    );
+    const [avgYearlyReturns, setAvgYearlyReturns] = useState<number>(
+        defaultValues.avgYearlyReturns
+    );
+    const [retirementIncomeTarget, setRetirementIncomeTarget] = useState<
+        number
+    >(defaultValues.retirementIncomeTarget);
+    const [withdrawalRate, setWithdrawalRate] = useState<number>(
+        defaultValues.withdrawalRate
+    );
 
     // Incomes
     const [incomes, setIncomes] = useState<CashFlow[]>(() =>
@@ -66,13 +101,13 @@ export const FiltersBar: React.FC<FiltersBarProps> = ({
         })
     );
 
-    // Expenses
-    const [expenses, setExpenses] = useState<CashFlow[]>(() =>
-        defaultValues.expenses.map((expense) => {
-            if (!expense.id) {
-                expense.id = uuidv4();
+    // Spendings
+    const [spendings, setSpendings] = useState<CashFlow[]>(() =>
+        defaultValues.spendings.map((spending) => {
+            if (!spending.id) {
+                spending.id = uuidv4();
             }
-            return expense;
+            return spending;
         })
     );
 
@@ -81,8 +116,8 @@ export const FiltersBar: React.FC<FiltersBarProps> = ({
         onOpen();
     };
 
-    const handleAddExpense = () => {
-        setDialogTitle("Add Expense");
+    const handleAddSpending = () => {
+        setDialogTitle("Add Spending");
         onOpen();
     };
 
@@ -90,8 +125,8 @@ export const FiltersBar: React.FC<FiltersBarProps> = ({
         setIncomes(removeFromList(incomes, cashFlow));
     };
 
-    const handleDeleteExpense = (cashFlow: CashFlow) => {
-        setExpenses(removeFromList(expenses, cashFlow));
+    const handleDeleteSpending = (cashFlow: CashFlow) => {
+        setSpendings(removeFromList(spendings, cashFlow));
     };
 
     const handleEditIncome = (cashFlow: CashFlow) => {
@@ -100,20 +135,23 @@ export const FiltersBar: React.FC<FiltersBarProps> = ({
         onOpen();
     };
 
-    const handleEditExpense = (cashFlow: CashFlow) => {
+    const handleEditSpending = (cashFlow: CashFlow) => {
         setActiveCashFlow(cashFlow);
-        setDialogTitle("Edit Expense");
+        setDialogTitle("Edit Spending");
         onOpen();
     };
 
-    const updateCashFlow = (target: CashFlow[], cashFlow: CashFlow): CashFlow[] => {
+    const updateCashFlow = (
+        target: CashFlow[],
+        cashFlow: CashFlow
+    ): CashFlow[] => {
         const index = target.findIndex((item) => item.id === cashFlow.id);
 
         if (index > -1) {
             // Update
             const newCashFlows = [...target];
             newCashFlows[index] = { ...cashFlow };
-            
+
             return newCashFlows;
         } else {
             // Create
@@ -127,11 +165,17 @@ export const FiltersBar: React.FC<FiltersBarProps> = ({
         }
 
         // this is sketchy, find a better way
-        if ((activeCashFlow && dialogTitle === "Edit Income") || dialogTitle === "Add Income") {
+        if (
+            (activeCashFlow && dialogTitle === "Edit Income") ||
+            dialogTitle === "Add Income"
+        ) {
             setIncomes(updateCashFlow(incomes, cashFlow));
             setActiveCashFlow(undefined);
-        } else if ((activeCashFlow && dialogTitle === "Edit Expense") || dialogTitle === "Add Expense") {
-            setExpenses(updateCashFlow(expenses, cashFlow));
+        } else if (
+            (activeCashFlow && dialogTitle === "Edit Spending") ||
+            dialogTitle === "Add Spending"
+        ) {
+            setSpendings(updateCashFlow(spendings, cashFlow));
             setActiveCashFlow(undefined);
         }
 
@@ -147,7 +191,7 @@ export const FiltersBar: React.FC<FiltersBarProps> = ({
             withdrawalRate,
             retirementIncomeTarget,
             incomes,
-            expenses,
+            spendings,
         });
     }, [
         startingYear,
@@ -157,13 +201,17 @@ export const FiltersBar: React.FC<FiltersBarProps> = ({
         withdrawalRate,
         retirementIncomeTarget,
         incomes,
-        expenses,
+        spendings,
         onChange,
     ]);
 
     return (
         <Stack backgroundColor="white" flexBasis="450px">
-            <Modal isOpen={isOpen} closeOnOverlayClick={false} onClose={onClose}>
+            <Modal
+                isOpen={isOpen}
+                closeOnOverlayClick={false}
+                onClose={onClose}
+            >
                 <ModalOverlay />
                 <EditCashFlowDialog
                     title={dialogTitle}
@@ -174,17 +222,31 @@ export const FiltersBar: React.FC<FiltersBarProps> = ({
             </Modal>
 
             <Stack spacing={0}>
+                <Stack>
+                    <MyInput label="Description" />
+                </Stack>
+                <Stack>
+                    <MyInput label="Name" />
+                </Stack>
+                <Stack>
+                    <MyInput label="Time" />
+                </Stack>
+
                 <FilterSection title="Misc" padding="15px">
                     <Stack isInline>
                         <FormControl flexBasis="50%">
-                            <FormLabel htmlFor="startingYear">Starting Year</FormLabel>
+                            <FormLabel htmlFor="startingYear">
+                                Starting Year
+                            </FormLabel>
 
                             <NumberInput
                                 size="sm"
                                 min={1900}
                                 max={3000}
                                 defaultValue={startingYear}
-                                onChange={(value: React.ReactText) => setStartingYear(value as number)}
+                                onChange={(value: React.ReactText) =>
+                                    setStartingYear(value as number)
+                                }
                             >
                                 <NumberInputField id="startingYear" />
                                 <NumberInputStepper>
@@ -201,7 +263,9 @@ export const FiltersBar: React.FC<FiltersBarProps> = ({
                                 size="sm"
                                 precision={0}
                                 defaultValue={age}
-                                onChange={(value: React.ReactText) => setAge(value as number)}
+                                onChange={(value: React.ReactText) =>
+                                    setAge(value as number)
+                                }
                             >
                                 <NumberInputField id="age" />
                                 <NumberInputStepper>
@@ -214,14 +278,18 @@ export const FiltersBar: React.FC<FiltersBarProps> = ({
 
                     <Stack isInline marginTop="15px">
                         <FormControl flexBasis="50%">
-                            <FormLabel htmlFor="initialCapital">Initial Capital ($)</FormLabel>
+                            <FormLabel htmlFor="initialCapital">
+                                Initial Capital ($)
+                            </FormLabel>
 
                             <NumberInput
                                 size="sm"
                                 step={1000}
                                 precision={0}
                                 defaultValue={initialCapital}
-                                onChange={(value: React.ReactText) => setInitialCapital(value as number)}
+                                onChange={(value: React.ReactText) =>
+                                    setInitialCapital(value as number)
+                                }
                             >
                                 <NumberInputField id="initialCapital" />
                                 <NumberInputStepper>
@@ -232,30 +300,43 @@ export const FiltersBar: React.FC<FiltersBarProps> = ({
                         </FormControl>
 
                         <FormControl flexBasis="50%">
-                            <FormLabel htmlFor="avgYearlyReturns">Avg Yearly Returns</FormLabel>
+                            <FormLabel htmlFor="avgYearlyReturns">
+                                Avg Yearly Returns
+                            </FormLabel>
                             <InputGroup size="sm">
                                 <Input
                                     type="number"
                                     id="avgYearlyReturns"
                                     value={avgYearlyReturns}
-                                    onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                                        setAvgYearlyReturns(parseInt(e.currentTarget.value))
+                                    onChange={(
+                                        e: React.ChangeEvent<HTMLInputElement>
+                                    ) =>
+                                        setAvgYearlyReturns(
+                                            parseInt(e.currentTarget.value)
+                                        )
                                     }
                                 />
-                                <InputRightElement children="%" color="gray.300" />
+                                <InputRightElement
+                                    children="%"
+                                    color="gray.300"
+                                />
                             </InputGroup>
                         </FormControl>
                     </Stack>
 
                     <Stack isInline>
                         <FormControl flexBasis="50%">
-                            <FormLabel htmlFor="withdrawalRate">Withdrawal Rate (%)</FormLabel>
+                            <FormLabel htmlFor="withdrawalRate">
+                                Withdrawal Rate (%)
+                            </FormLabel>
 
                             <NumberInput
                                 min={0}
                                 step={0.1}
                                 defaultValue={withdrawalRate}
-                                onChange={(value: React.ReactText) => setWithdrawalRate(value as number)}
+                                onChange={(value: React.ReactText) =>
+                                    setWithdrawalRate(value as number)
+                                }
                                 size="sm"
                             >
                                 <NumberInputField id="withdrawalRate" />
@@ -297,22 +378,30 @@ export const FiltersBar: React.FC<FiltersBarProps> = ({
                             onDelete={handleDeleteIncome}
                         />
 
-                        <Button variantColor="blue" onClick={handleAddIncome} borderRadius={0}>
+                        <Button
+                            variantColor="blue"
+                            onClick={handleAddIncome}
+                            borderRadius={0}
+                        >
                             Add Income
                         </Button>
                     </Stack>
                 </FilterSection>
 
-                <FilterSection title="Expenses">
+                <FilterSection title="Spendings">
                     <Stack>
                         <CashFlowTable
-                            items={expenses}
-                            onEdit={handleEditExpense}
-                            onDelete={handleDeleteExpense}
+                            items={spendings}
+                            onEdit={handleEditSpending}
+                            onDelete={handleDeleteSpending}
                         />
 
-                        <Button variantColor="red" onClick={handleAddExpense} borderRadius={0}>
-                            Add Expense
+                        <Button
+                            variantColor="red"
+                            onClick={handleAddSpending}
+                            borderRadius={0}
+                        >
+                            Add Spending
                         </Button>
                     </Stack>
                 </FilterSection>

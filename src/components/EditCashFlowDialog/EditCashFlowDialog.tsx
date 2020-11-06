@@ -30,36 +30,23 @@ interface EditCashFlowDialogProps {
     onSave: (cashFlow: CashFlow) => void;
 }
 
-export const EditCashFlowDialog: React.FC<EditCashFlowDialogProps> = ({
-    title,
-    cashFlow,
-    onCancel,
-    onSave,
-}) => {
+export const EditCashFlowDialog: React.FC<EditCashFlowDialogProps> = ({ title, cashFlow, onCancel, onSave }) => {
     const [name, setName] = useState<string>(cashFlow?.name || "");
-    const [amount, setAmount] = useState<string>(cashFlow?.amount + "" || "");
-    const [recurrenceType, setRecurrenceType] = useState<string>(
-        cashFlow?.recurrenceType || RecurrenceType.Once
-    );
+    const [amount, setAmount] = useState<string>(cashFlow?.amount != null ? `${cashFlow?.amount}` : "");
+    const [recurrenceType, setRecurrenceType] = useState<string>(cashFlow?.recurrenceType || RecurrenceType.Once);
     const [year, setYear] = useState<string>(`${cashFlow?.year || new Date().getFullYear()}`);
-    const [frequency, setFrequency] = useState<string>(cashFlow?.frequency + "" || "");
-    const [frequencyScope, setFrequencyScope] = useState<string>(
-        cashFlow?.frequencyScope || FrequencyScope.Day
-    );
+    const [frequency, setFrequency] = useState<string>(cashFlow?.frequency != null ? `${cashFlow.frequency}` : "1");
+    const [frequencyScope, setFrequencyScope] = useState<string>(cashFlow?.frequencyScope || FrequencyScope.Year);
     const [untilType, setUntilType] = useState<string>(cashFlow?.untilType || RecurrenceUntilType.Forever);
     const [untilYear, setUntilYear] = useState<string>(`${cashFlow?.untilYear || new Date().getFullYear()}`);
 
     const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => setName(e.currentTarget.value);
     const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => setAmount(e.currentTarget.value);
-    const handleSourceTypeChange = (e: React.ChangeEvent<HTMLInputElement>) =>
-        setRecurrenceType(e.currentTarget.value);
+    const handleSourceTypeChange = (e: React.ChangeEvent<HTMLInputElement>) => setRecurrenceType(e.currentTarget.value);
     const handleYearChange = (e: React.ChangeEvent<HTMLInputElement>) => setYear(e.currentTarget.value);
-    const handleUntilYearChange = (e: React.ChangeEvent<HTMLInputElement>) =>
-        setUntilYear(e.currentTarget.value);
-    const handleFrequencyChange = (e: React.ChangeEvent<HTMLInputElement>) =>
-        setFrequency(e.currentTarget.value);
-    const handleUntilTypeChange = (e: React.ChangeEvent<HTMLInputElement>) =>
-        setUntilType(e.currentTarget.value);
+    const handleUntilYearChange = (e: React.ChangeEvent<HTMLInputElement>) => setUntilYear(e.currentTarget.value);
+    const handleFrequencyChange = (e: React.ChangeEvent<HTMLInputElement>) => setFrequency(e.currentTarget.value);
+    const handleUntilTypeChange = (e: React.ChangeEvent<HTMLInputElement>) => setUntilType(e.currentTarget.value);
     const handleFrequencyScopeChange = (e: React.ChangeEvent<HTMLSelectElement>) =>
         setFrequencyScope(e.currentTarget.value);
 
@@ -114,14 +101,7 @@ export const EditCashFlowDialog: React.FC<EditCashFlowDialogProps> = ({
                 <FormControl isRequired>
                     <Stack isInline alignItems="center">
                         <FormLabel flex="0 0 120px">Description</FormLabel>
-                        <Input
-                            type="text"
-                            isRequired
-                            isFullWidth
-                            value={name}
-                            onChange={handleNameChange}
-                            autoFocus
-                        />
+                        <Input type="text" isRequired isFullWidth value={name} onChange={handleNameChange} autoFocus />
                     </Stack>
                 </FormControl>
 
@@ -129,13 +109,7 @@ export const EditCashFlowDialog: React.FC<EditCashFlowDialogProps> = ({
                     <Stack isInline alignItems="center">
                         <FormLabel flex="0 0 120px">Amount</FormLabel>
                         <InputGroup flex="1">
-                            <Input
-                                type="number"
-                                isFullWidth
-                                isRequired
-                                value={amount}
-                                onChange={handleAmountChange}
-                            />
+                            <Input type="number" isFullWidth isRequired value={amount} onChange={handleAmountChange} />
                             <InputRightElement children="$" />
                         </InputGroup>
                     </Stack>
@@ -144,11 +118,7 @@ export const EditCashFlowDialog: React.FC<EditCashFlowDialogProps> = ({
                 <FormControl isRequired marginTop="15px">
                     <FormLabel>Recurrence</FormLabel>
 
-                    <Stack
-                        isInline
-                        marginTop="0px"
-                        className={"recurrence-type" + (!isRecurring ? " selected" : "")}
-                    >
+                    <Stack isInline marginTop="0px" className={"recurrence-type" + (!isRecurring ? " selected" : "")}>
                         <Radio
                             isChecked={!isRecurring}
                             value={RecurrenceType.Once}
@@ -173,11 +143,7 @@ export const EditCashFlowDialog: React.FC<EditCashFlowDialogProps> = ({
                         />
                     </Stack>
 
-                    <Stack
-                        isInline
-                        marginTop="15px"
-                        className={"recurrence-type" + (isRecurring ? " selected" : "")}
-                    >
+                    <Stack isInline marginTop="15px" className={"recurrence-type" + (isRecurring ? " selected" : "")}>
                         <Radio
                             isChecked={isRecurring}
                             value={RecurrenceType.Recurring}
@@ -191,11 +157,7 @@ export const EditCashFlowDialog: React.FC<EditCashFlowDialogProps> = ({
 
                         <Stack>
                             <Stack isInline>
-                                <Text
-                                    alignSelf="center"
-                                    flex="0 0 70px"
-                                    color={!isRecurring ? "gray.300" : undefined}
-                                >
+                                <Text alignSelf="center" flex="0 0 70px" color={!isRecurring ? "gray.300" : undefined}>
                                     every
                                 </Text>
 
@@ -229,11 +191,7 @@ export const EditCashFlowDialog: React.FC<EditCashFlowDialogProps> = ({
                             </Stack>
 
                             <Stack isInline>
-                                <Text
-                                    alignSelf="center"
-                                    flex="0 0 70px"
-                                    color={!isRecurring ? "gray.300" : undefined}
-                                >
+                                <Text alignSelf="center" flex="0 0 70px" color={!isRecurring ? "gray.300" : undefined}>
                                     starting
                                 </Text>
 
@@ -246,11 +204,7 @@ export const EditCashFlowDialog: React.FC<EditCashFlowDialogProps> = ({
                             </Stack>
 
                             <Stack isInline>
-                                <Text
-                                    alignSelf="center"
-                                    flex="0 0 70px"
-                                    color={!isRecurring ? "gray.300" : undefined}
-                                >
+                                <Text alignSelf="center" flex="0 0 70px" color={!isRecurring ? "gray.300" : undefined}>
                                     until
                                 </Text>
 
@@ -288,9 +242,7 @@ export const EditCashFlowDialog: React.FC<EditCashFlowDialogProps> = ({
                                             size="sm"
                                             value={untilYear}
                                             onChange={handleUntilYearChange}
-                                            isDisabled={
-                                                !isRecurring || untilType !== RecurrenceUntilType.Year
-                                            }
+                                            isDisabled={!isRecurring || untilType !== RecurrenceUntilType.Year}
                                         />
                                     </Stack>
                                 </Stack>

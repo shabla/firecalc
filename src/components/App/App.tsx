@@ -14,7 +14,7 @@ type RowItem = {
     age?: number | undefined;
     startOfYearCapital: number;
     income: number;
-    expenses: number;
+    spendings: number;
     savings: number;
     returns: number;
     totalCapital: number;
@@ -73,10 +73,10 @@ const columns: ColumnDefinition[] = [
         cellClasses: "border-left",
     },
     {
-        title: "Expenses",
-        key: "expenses",
+        title: "spendings",
+        key: "spendings",
         getData: (row: RowItem, col: ColumnDefinition) => (
-            <Currency quantity={row.expenses} currency="CAD" pattern="###,### !" />
+            <Currency quantity={row.spendings} currency="CAD" pattern="###,### !" />
         ),
         textAlign: "right",
     },
@@ -110,7 +110,7 @@ const columns: ColumnDefinition[] = [
 
 const ROWS_TO_SHOW = 70;
 
-export const App = () => {
+export const App: React.FC = () => {
     const [rows, setRows] = useState<RowItem[]>([]);
     const [filters, setFilters] = useState<FiltersValues>(getDefaultSettings());
 
@@ -178,13 +178,13 @@ export const App = () => {
             const goalReached = retirementWithdrawal >= filters.retirementIncomeTarget;
 
             // Income for this year
-            let income = calculateCashFlow(year, filters.incomes, goalReached);
+            const income = calculateCashFlow(year, filters.incomes, goalReached);
 
-            // Expenses for this year
-            const expenses = calculateCashFlow(year, filters.expenses, goalReached);
+            // Spendings for this year
+            const spendings = calculateCashFlow(year, filters.spendings, goalReached);
 
             // Savings
-            const savings = income - expenses;
+            const savings = income - spendings;
 
             const totalCapitalBeforeReturns = startOfYearCapital + savings;
 
@@ -197,7 +197,7 @@ export const App = () => {
                 age,
                 startOfYearCapital,
                 income,
-                expenses,
+                spendings,
                 savings,
                 returns,
                 totalCapital: endOfYearTotalCapital,

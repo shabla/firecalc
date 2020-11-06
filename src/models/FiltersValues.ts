@@ -8,5 +8,5 @@ export interface FiltersValues {
     withdrawalRate: number;
     retirementIncomeTarget: number;
     incomes: CashFlow[];
-    expenses: CashFlow[];
+    spendings: CashFlow[];
 }
