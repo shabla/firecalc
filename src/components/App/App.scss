@@ -1,35 +1,33 @@
+html {
+    font-family: "Open Sans", sans-serif !important;
+}
+
 body {
-    background-color: white;
+    background: linear-gradient(135deg, #becef3 0%, #00263c 100%);
 }
 
 .the-table {
-    border-left: 5px solid #333;
-    border-right: 5px solid #333;
-    
-    tr {
-        &.ready {
-            background-color: #c7f7c7;
-
-            &:nth-of-type(even) {
-                background: #a3efa3;
-            }
-        }
-    }
+    margin: 10px;
+    color: white;
 
     td {
         &.border-left {
-            border-left: 2px solid #333439;
+            border-left: 2px solid rgba(20, 20, 20, 0.3);
         }
         &.border-right {
-            border-right: 2px solid #333439;
+            border-right: 2px solid rgba(20, 20, 20, 0.3);
         }
     }
 
-    .align-right {
-        text-align: right;
-    }
+    tbody {
+        tr {
+            &.ready {
+                background-color: rgba(0, 150, 0, 0.3);
 
-    .align-center {
-        text-align: center;
+                &:nth-of-type(even) {
+                    background-color: rgba(0, 110, 0, 0.3);
+                }
+            }
+        }
     }
 }
