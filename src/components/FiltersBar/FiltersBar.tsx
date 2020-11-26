@@ -164,7 +164,7 @@ export const FiltersBar: React.FC<FiltersBarProps> = ({ defaultValues = getDefau
             </Modal>
 
             <Stack spacing={0}>
-                <Panel title="Misc">
+                {/* <Panel title="Misc">
                     <Stack direction="row" spacing={0}>
                         <Stack>
                             <MyInput label="Starting Year" />
@@ -189,7 +189,7 @@ export const FiltersBar: React.FC<FiltersBarProps> = ({ defaultValues = getDefau
                             <MyInput label="Retirement Income Target ($)" />
                         </Stack>
                     </Stack>
-                </Panel>
+                </Panel> */}
 
                 <Panel title="Misc">
                     <Stack isInline>

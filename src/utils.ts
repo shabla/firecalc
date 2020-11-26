@@ -32,7 +32,7 @@ const getDefaultIncomes = (val?: CashFlow[]): CashFlow[] => val || [];
 const getDefaultSpendings = (val?: CashFlow[]): CashFlow[] => val || [];
 
 export const getDefaultSettings = (): FiltersValues => {
-    const filters = getFromLocalStorage("filters") as FiltersValues;
+    const filters = getFromLocalStorage("filters") as FiltersValues || {};
 
     return {
         startingYear: getDefaultStartingYear(filters.startingYear),
