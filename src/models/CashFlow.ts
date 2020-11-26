@@ -2,10 +2,10 @@ export interface CashFlow {
     id?: string;
     name: string,
     amount: number,
-    recurrenceType: string,
+    recurring: boolean,
     year: number,
 
-    // only for RecurrenceType.Recurring
+    // only if recurring
     frequency?: number,
     frequencyScope?: string,
     untilType?: string,

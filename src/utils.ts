@@ -44,42 +44,4 @@ export const getDefaultSettings = (): FiltersValues => {
         incomes: getDefaultIncomes(filters.incomes),
         spendings: getDefaultSpendings(filters.spendings),
     };
-
-    // return {
-    //     startingYear: 2020,
-    //     age: 31,
-    //     initialCapital: 5000,
-    //     avgYearlyReturns: 6,
-    //     withdrawalRate: 4,
-    //     retirementIncomeTarget: 40000,
-    //     incomes: [
-    //         {
-    //             name: "Bonus thingie",
-    //             amount: 1234,
-    //             recurrenceType: "once",
-    //             year: 2021,
-    //             id: "706139e3-be1b-4410-a137-047b64f1849c",
-    //         },
-    //         {
-    //             name: "Payroll",
-    //             amount: 2400,
-    //             recurrenceType: "recurring",
-    //             frequency: 2,
-    //             frequencyScope: "week",
-    //             year: 2020,
-    //             id: "7z6139e3-be1b-4410-a137-047b64f1849c",
-    //         },
-    //     ],
-    //     spendings: [
-    //         {
-    //             name: "everything",
-    //             amount: 30000,
-    //             recurrenceType: "recurring",
-    //             frequency: 1,
-    //             frequencyScope: "year",
-    //             year: 2020,
-    //             id: "7z6139e3-be1b-4a10-a137-047b64f1849c",
-    //         },
-    //     ],
-    // };
 };

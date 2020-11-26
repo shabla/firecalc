@@ -4,7 +4,7 @@ import { ThemeProvider, Stack, theme, CSSReset } from "@chakra-ui/core";
 
 import { SimpleTable, FiltersBar } from "components";
 import { FiltersValues, CashFlow } from "models";
-import { RecurrenceType, RecurrenceUntilType, FrequencyScope } from "values";
+import { RecurrenceUntilType, FrequencyScope } from "values";
 import { getDefaultSettings, saveToLocalStorage } from "utils";
 
 import "./App.scss";
@@ -118,9 +118,7 @@ export const App: React.FC = () => {
         let total = 0;
 
         cashFlows.forEach((cashFlow) => {
-            if (cashFlow.recurrenceType === RecurrenceType.Once && year === cashFlow.year) {
-                total += cashFlow.amount;
-            } else if (cashFlow.recurrenceType === RecurrenceType.Recurring) {
+            if (!cashFlow.recurring) {
                 const started = year >= cashFlow.year;
                 const expired =
                     (cashFlow.untilType === RecurrenceUntilType.Year && year > cashFlow.untilYear!) ||
@@ -144,6 +142,8 @@ export const App: React.FC = () => {
                             break;
                     }
                 }
+            } else if (year === cashFlow.year) {
+                total += cashFlow.amount;
             }
         });
 
