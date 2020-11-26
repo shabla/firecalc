@@ -4,7 +4,7 @@ import { ThemeProvider, Stack, theme, CSSReset } from "@chakra-ui/core";
 
 import { SimpleTable, FiltersBar } from "components";
 import { FiltersValues, CashFlow } from "models";
-import { RecurrenceUntilType, FrequencyScope } from "values";
+import { RecurrenceStartingType, RecurrenceUntilType, FrequencyScope } from "values";
 import { getDefaultSettings, saveToLocalStorage } from "utils";
 
 import "./App.scss";
@@ -114,35 +114,47 @@ export const App: React.FC = () => {
     const [rows, setRows] = useState<RowItem[]>([]);
     const [filters, setFilters] = useState<FiltersValues>(getDefaultSettings());
 
-    const calculateCashFlow = (year: number, cashFlows: CashFlow[], goalReached: boolean): number => {
+    const calculateCashFlow = (year: number, age: number, cashFlows: CashFlow[], goalReached: boolean): number => {
         let total = 0;
 
         cashFlows.forEach((cashFlow) => {
-            if (!cashFlow.recurring) {
-                const started = year >= cashFlow.year;
-                const expired =
-                    (cashFlow.untilType === RecurrenceUntilType.Year && year > cashFlow.untilYear!) ||
-                    (cashFlow.untilType === RecurrenceUntilType.Goal && goalReached);
+            if (cashFlow.recurring) {
+                const {
+                    frequency,
+                    frequencyScope,
+                    startingType,
+                    startingValue,
+                    untilType,
+                    untilValue,
+                } = cashFlow.recurringOptions!;
+
+                const started: boolean =
+                    {
+                        [RecurrenceStartingType.Now]: true,
+                        [RecurrenceStartingType.Goal]: goalReached,
+                        [RecurrenceStartingType.Age]: age >= startingValue!,
+                        [RecurrenceStartingType.Year]: year >= startingValue!,
+                    }[startingType] ?? false;
+
+                const expired: boolean =
+                    {
+                        [RecurrenceUntilType.Forever]: false,
+                        [RecurrenceUntilType.Goal]: goalReached,
+                        [RecurrenceUntilType.Age]: age > untilValue!,
+                        [RecurrenceUntilType.Year]: year > untilValue!,
+                    }[untilType] ?? true;
 
                 if (started && !expired) {
-                    const freq = cashFlow.frequency as number;
                     // calc the total for the year
-                    switch (cashFlow.frequencyScope) {
-                        case FrequencyScope.Day:
-                            total += cashFlow.amount * (365 / freq);
-                            break;
-                        case FrequencyScope.Week:
-                            total += cashFlow.amount * (52 / freq);
-                            break;
-                        case FrequencyScope.Month:
-                            total += cashFlow.amount * (12 / freq);
-                            break;
-                        case FrequencyScope.Year:
-                            total += cashFlow.amount * (1 / freq);
-                            break;
-                    }
+                    total +=
+                        {
+                            [FrequencyScope.Day]: cashFlow.amount * (365 / frequency),
+                            [FrequencyScope.Week]: cashFlow.amount * (52 / frequency),
+                            [FrequencyScope.Month]: cashFlow.amount * (12 / frequency),
+                            [FrequencyScope.Year]: cashFlow.amount * (1 / frequency),
+                        }[frequencyScope] || 0;
                 }
-            } else if (year === cashFlow.year) {
+            } else if (year === cashFlow.fixedYear) {
                 total += cashFlow.amount;
             }
         });
@@ -160,10 +172,7 @@ export const App: React.FC = () => {
             const year = filters.startingYear + i;
 
             // Age
-            let age;
-            if (filters.age) {
-                age = filters.age + i;
-            }
+            const age = filters.age + i;
 
             // Capital at the start of the year
             let startOfYearCapital = 0;
@@ -178,10 +187,10 @@ export const App: React.FC = () => {
             const goalReached = retirementWithdrawal >= filters.retirementIncomeTarget;
 
             // Income for this year
-            const income = calculateCashFlow(year, filters.incomes, goalReached);
+            const income = calculateCashFlow(year, age, filters.incomes, goalReached);
 
             // Spendings for this year
-            const spendings = calculateCashFlow(year, filters.spendings, goalReached);
+            const spendings = calculateCashFlow(year, age, filters.spendings, goalReached);
 
             // Savings
             const savings = income - spendings;

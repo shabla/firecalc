@@ -1,15 +1,19 @@
+import { FrequencyScope, RecurrenceUntilType, RecurrenceStartingType } from "values";
+
 export interface CashFlow {
     id?: string;
-    name: string,
-    amount: number,
-    recurring: boolean,
-    year: number,
+    name: string;
+    amount: number;
+    recurring: boolean;
+    fixedYear?: number;
+    recurringOptions?: RecurringOptions;
+}
 
-    // only if recurring
-    frequency?: number,
-    frequencyScope?: string,
-    untilType?: string,
-    untilYear?: number,
-    startingType?: string;
+export interface RecurringOptions {
+    frequency: number;
+    frequencyScope: FrequencyScope;
+    startingType: RecurrenceStartingType;
+    untilType: RecurrenceUntilType;
     startingValue?: number;
+    untilValue?: number;
 }

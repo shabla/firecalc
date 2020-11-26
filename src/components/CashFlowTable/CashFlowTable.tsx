@@ -4,7 +4,7 @@ import { IconButton, Stack } from "@chakra-ui/core";
 
 import { CashFlow } from "models";
 import { SimpleTable } from "components";
-import { RecurrenceUntilType } from "values";
+import { RecurrenceStartingType, RecurrenceUntilType } from "values";
 
 export interface CashFlowTableProps {
     items: CashFlow[];
@@ -19,19 +19,36 @@ export const CashFlowTable: React.FC<CashFlowTableProps> = ({
 }) => {
     const getFrequencyDescription = (cashFlow: CashFlow): string => {
         if (cashFlow.recurring) {
-            const freq = cashFlow.frequency && cashFlow.frequency > 1 ? `${cashFlow.frequency} ` : "";
-            const freqScope = cashFlow.frequencyScope + (cashFlow.frequency && cashFlow.frequency > 1 ? "s" : "");
+            const {
+                frequency,
+                frequencyScope,
+                startingType,
+                startingValue,
+                untilType,
+                untilValue,
+            } = cashFlow.recurringOptions!;
+            const freq = frequency > 1 ? `${frequency} ` : "";
+            const freqScope = frequencyScope + (frequency > 1 ? "s" : "");
 
-            let until = "";
-            if (cashFlow.untilType === RecurrenceUntilType.Goal) {
-                until = " until goal reached";
-            } else if (cashFlow.untilType === RecurrenceUntilType.Year) {
-                until = ` until ${cashFlow.untilYear}`;
-            }
+            const starting =
+                {
+                    [RecurrenceStartingType.Now]: "now",
+                    [RecurrenceStartingType.Goal]: "when goal is reached",
+                    [RecurrenceStartingType.Age]: `at age ${startingValue}`,
+                    [RecurrenceStartingType.Year]: `in year ${startingValue}`,
+                }[startingType] || "";
 
-            return `Every ${freq}${freqScope} starting in ${cashFlow.year}${until}`;
+            const until =
+                {
+                    [RecurrenceUntilType.Forever]: "",
+                    [RecurrenceUntilType.Goal]: " until goal reached",
+                    [RecurrenceUntilType.Age]: ` until age ${untilValue}`,
+                    [RecurrenceUntilType.Year]: ` until ${untilValue}`,
+                }[untilType] || "";
+
+            return `Every ${freq}${freqScope} starting ${starting}${until}`;
         } else {
-            return `Once in ${cashFlow.year}`;
+            return `Once in ${cashFlow.fixedYear}`;
         }
     };
 

@@ -24,6 +24,7 @@ import { FilterSection } from "./FilterSection";
 import { removeFromList } from "utils";
 import { CashFlowTable } from "components";
 import { CashFlow, FiltersValues } from "models";
+import { getDefaultSettings } from "utils";
 
 import "./MyInput.scss";
 
@@ -55,16 +56,7 @@ const MyInput: React.FC<MyInputProps> = ({ label }) => {
 };
 
 export const FiltersBar: React.FC<FiltersBarProps> = ({
-    defaultValues = {
-        startingYear: new Date().getFullYear(),
-        age: undefined,
-        initialCapital: 0,
-        avgYearlyReturns: 0,
-        withdrawalRate: 4,
-        retirementIncomeTarget: 40000,
-        incomes: [],
-        spendings: [],
-    },
+    defaultValues = getDefaultSettings(),
     onChange,
 }) => {
     const { isOpen, onOpen, onClose } = useDisclosure();
@@ -77,7 +69,7 @@ export const FiltersBar: React.FC<FiltersBarProps> = ({
     const [startingYear, setStartingYear] = useState<number>(
         defaultValues.startingYear
     );
-    const [age, setAge] = useState<number | undefined>(defaultValues.age);
+    const [age, setAge] = useState<number>(defaultValues.age);
     const [initialCapital, setInitialCapital] = useState<number>(
         defaultValues.initialCapital
     );

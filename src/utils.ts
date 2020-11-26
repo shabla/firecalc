@@ -23,7 +23,7 @@ export const getFromLocalStorage = (name: string): unknown => {
 };
 
 const getDefaultStartingYear = (val?: number): number => val != null ? val : new Date().getFullYear();
-const getDefaultAge = (val?: number): number | undefined => val;
+const getDefaultAge = (val?: number): number => val != null ? val : 20;
 const getDefaultInitialCapital = (val?: number): number => val != null ? val : 0;
 const getDefaultAvgYearlyReturns = (val?: number): number => val != null ? val : 6;
 const getDefaultWithdrawalRate = (val?: number): number => val != null ? val : 4;

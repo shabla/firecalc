@@ -31,48 +31,56 @@ interface EditCashFlowDialogProps {
 }
 
 const getDefaultStartingTypeValue = (type: RecurrenceStartingType): string => {
-    switch(type) {
-        case RecurrenceStartingType.Now: return "";
-        case RecurrenceStartingType.Goal: return "";
-        case RecurrenceStartingType.Age: return "";
-        case RecurrenceStartingType.Year: return `${new Date().getFullYear()}`;
-        default: return "";
+    if (type === RecurrenceStartingType.Year) {
+        return `${new Date().getFullYear()}`;
     }
-}
+    return "";
+};
 
 export const EditCashFlowDialog: React.FC<EditCashFlowDialogProps> = ({ title, cashFlow, onCancel, onSave }) => {
     const [name, setName] = useState<string>(cashFlow?.name || "");
     const [amount, setAmount] = useState<string>(cashFlow?.amount != null ? `${cashFlow?.amount}` : "");
     const [recurring, setRecurring] = useState<boolean>(cashFlow?.recurring || false);
-    const [year, setYear] = useState<string>(`${cashFlow?.year || new Date().getFullYear()}`);
-    const [frequency, setFrequency] = useState<string>(cashFlow?.frequency != null ? `${cashFlow.frequency}` : "1");
-    const [frequencyScope, setFrequencyScope] = useState<string>(cashFlow?.frequencyScope || FrequencyScope.Year);
-    const [untilType, setUntilType] = useState<string>(cashFlow?.untilType || RecurrenceUntilType.Forever);
-    const [untilYear, setUntilYear] = useState<string>(`${cashFlow?.untilYear || new Date().getFullYear()}`);
-    const [startingType, setStartingType] = useState<string>(cashFlow?.startingType || RecurrenceStartingType.Now);
+    const [year, setYear] = useState<string>(`${cashFlow?.fixedYear || new Date().getFullYear()}`);
+    const [frequency, setFrequency] = useState<string>(
+        cashFlow?.recurringOptions?.frequency != null ? `${cashFlow.recurringOptions?.frequency}` : "1"
+    );
+    const [frequencyScope, setFrequencyScope] = useState<string>(
+        cashFlow?.recurringOptions?.frequencyScope || FrequencyScope.Year
+    );
+    const [untilType, setUntilType] = useState<string>(
+        cashFlow?.recurringOptions?.untilType || RecurrenceUntilType.Forever
+    );
+    const [untilValue, setUntilValue] = useState<string>(
+        `${cashFlow?.recurringOptions?.untilValue || new Date().getFullYear()}`
+    );
+    const [startingType, setStartingType] = useState<string>(
+        cashFlow?.recurringOptions?.startingType || RecurrenceStartingType.Now
+    );
     const [startingValue, setStartingValue] = useState<string>(() => {
-        if(cashFlow?.startingValue) {
-            return `${cashFlow?.startingValue}`;
+        if (cashFlow?.recurringOptions?.startingValue) {
+            return `${cashFlow?.recurringOptions?.startingValue}`;
         }
-        
+
         return getDefaultStartingTypeValue(startingType as RecurrenceStartingType);
     });
 
     const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => setName(e.currentTarget.value);
     const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => setAmount(e.currentTarget.value);
     const handleYearChange = (e: React.ChangeEvent<HTMLInputElement>) => setYear(e.currentTarget.value);
-    const handleUntilYearChange = (e: React.ChangeEvent<HTMLInputElement>) => setUntilYear(e.currentTarget.value);
+    const handleUntilYearChange = (e: React.ChangeEvent<HTMLInputElement>) => setUntilValue(e.currentTarget.value);
     const handleFrequencyChange = (e: React.ChangeEvent<HTMLInputElement>) => setFrequency(e.currentTarget.value);
     const handleUntilTypeChange = (e: React.ChangeEvent<HTMLInputElement>) => setUntilType(e.currentTarget.value);
     const handleFrequencyScopeChange = (e: React.ChangeEvent<HTMLSelectElement>) =>
-    setFrequencyScope(e.currentTarget.value);
+        setFrequencyScope(e.currentTarget.value);
     const handleStartingTypeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const newType = e.currentTarget.value;
         const value = getDefaultStartingTypeValue(newType as RecurrenceStartingType);
         setStartingValue(value);
         setStartingType(newType);
     };
-    const handleStartingValueChange = (e: React.ChangeEvent<HTMLInputElement>) => setStartingValue(e.currentTarget.value);
+    const handleStartingValueChange = (e: React.ChangeEvent<HTMLInputElement>) =>
+        setStartingValue(e.currentTarget.value);
 
     const handleSave = () => {
         const hasName = name !== "";
@@ -80,7 +88,7 @@ export const EditCashFlowDialog: React.FC<EditCashFlowDialogProps> = ({ title, c
         const hasYear = year !== "";
         const hasFrequency = frequency !== "";
         const isUntilYear = untilType === RecurrenceUntilType.Year;
-        const hasUntilYear = untilYear !== "";
+        const hasUntilYear = untilValue !== "";
 
         // Needed in all recurrence types
         if (!hasName || !hasAmount || !hasYear) {
@@ -92,19 +100,27 @@ export const EditCashFlowDialog: React.FC<EditCashFlowDialogProps> = ({ title, c
             return;
         }
 
-        onSave({
+        let updatedCashFlow: CashFlow = {
             ...cashFlow,
             name,
             amount: parseInt(amount),
             recurring,
-            year: parseInt(year),
-            frequency: recurring ? parseInt(frequency) : undefined,
-            frequencyScope: recurring ? frequencyScope : undefined,
-            untilType: recurring ? untilType : undefined,
-            untilYear: recurring && isUntilYear ? parseInt(untilYear) : undefined,
-            startingType: recurring ? startingType : undefined,
-            startingValue: recurring ? parseInt(startingValue) : undefined
-        });
+        };
+
+        if (recurring) {
+            updatedCashFlow.recurringOptions = {
+                frequency: parseInt(frequency),
+                frequencyScope: frequencyScope as FrequencyScope,
+                untilType: untilType as RecurrenceUntilType,
+                untilValue: parseInt(untilValue),
+                startingType: startingType as RecurrenceStartingType,
+                startingValue: parseInt(startingValue),
+            };
+        } else {
+            updatedCashFlow.fixedYear = parseInt(year);
+        }
+
+        onSave(updatedCashFlow);
     };
 
     const getFrequencyScopeLabel = (freqScope: FrequencyScope) => {
@@ -323,7 +339,7 @@ export const EditCashFlowDialog: React.FC<EditCashFlowDialogProps> = ({ title, c
                                             type="number"
                                             size="sm"
                                             flexBasis="65%"
-                                            value={untilYear}
+                                            value={untilValue}
                                             onChange={handleUntilYearChange}
                                             isDisabled={!recurring || untilType !== RecurrenceUntilType.Year}
                                         />
